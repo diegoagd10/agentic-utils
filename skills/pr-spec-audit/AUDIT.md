@@ -6,7 +6,7 @@ One audit run of a PR against its spec. The `pr-spec-audit` orchestrator dispatc
 
 1. **Fix the diff.** Audit exactly the base and head SHAs from your brief.
 2. **Gather product sources**: PR description, linked tickets/specs, ADRs, domain docs, repo instructions. Only these state intent; tests and implementation are evidence to check against them.
-3. **Audit each production file** (human-authored, non-test, non-generated) through all five categories. For each behavior the file changes, check it against the product sources and the tests that exercise it, and assign one status. Before calling a category *Confirmed*, enumerate in your working notes every changed behavior it covers, each paired with the source line and the test assertion that settle it; any behavior left unpaired becomes a finding. Done when every production file has, for each of the five categories, findings, an enumeration backing *Confirmed*, or a reason the category does not apply.
+3. **Audit each production file** (human-authored, non-test, non-generated) through all five categories. For each behavior the file changes, check it against the product sources and the tests that exercise it, and assign one status. Before calling a category *Confirmed*, enumerate in your working notes every changed behavior it covers, each paired with the source line and the test assertion that settle it; any behavior left unpaired becomes a finding. The enumeration stays in your notes; the report carries only the category name. Done when every production file has, for each of the five categories, findings, an enumeration backing *Confirmed*, or a reason the category does not apply.
 4. **Write the report** in the format below. Done when every finding outside a *Low test gaps* line has its `###` heading and all six fields, one sentence each.
 
 ## Reference
@@ -15,13 +15,13 @@ One audit run of a PR against its spec. The `pr-spec-audit` orchestrator dispatc
 
 | ID prefix | Category | Checks |
 |-----------|----------|--------|
-| `B` | BOUNDARY | Limit values: min, max, overflow, max length. |
+| `B` | BOUNDARY | Limit values: min, max, overflow, max length, request body size. |
 | `N` | NULL/EMPTY | Null, empty, and whitespace-only input. |
 | `A` | AUTHORIZATION | Role × endpoint matrix: 401/403 versus 200. |
 | `I` | INJECTION | SQL/NoSQL, XSS, command, and path-traversal payloads. |
 | `S` | STATE | Lifecycle, idempotency, retries, replay, and effects of edit/delete on later requests. |
 
-**IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus a number counting up across the whole report, `B-1`, `B-2`, `N-1`, `A-1`.
+**IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus that prefix's own counter, starting at 1 and counting up across the whole report: `B-1`, `B-2`, `S-1`, `S-2`, `I-1`.
 
 **Status** — exactly one per finding:
 
@@ -61,7 +61,7 @@ Confirmed: BOUNDARY, NULL/EMPTY
 Not applicable: INJECTION — the file takes no external input.
 ```
 
-- One `##` section per production file, in diff order; one `###` per finding, titled `<ID> - <short behavior>`. *Confirmed* lists each category the file passes with every behavior `CONFIRMED`; those behaviors get no ID and no section.
+- One `##` section per production file, in diff order; one `###` per finding, titled `<ID> - <short behavior>`. *Confirmed* lists only the names of the categories the file passes with every behavior `CONFIRMED`, e.g. `Confirmed: AUTHORIZATION, STATE`; those behaviors get no ID, no section, and no justification.
 - *Low test gaps* holds every `NO_EVIDENCE` finding with `Low` risk, one short clause and one citation each, instead of a `###` section. These keep their IDs and count in both count lines.
 - Both count lines count only findings that need action.
 - *Not applicable* lists each category with no findings in that file, with its reason.
