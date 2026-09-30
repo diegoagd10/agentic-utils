@@ -1,6 +1,6 @@
 ---
 name: pr-contract-audit
-description: Audit every production file in a PR for boundary, null/empty, authorization-matrix, and injection risks, producing a terse Markdown decision list.
+description: Audit every production file in a PR for boundary, null/empty, authorization-matrix, injection, and state risks, producing a terse Markdown decision list.
 disable-model-invocation: true
 ---
 
@@ -12,12 +12,12 @@ The product is a **decision list**: for every production file the PR changes, ea
 
 1. **Fix the diff.** Resolve the base and head SHAs and audit that exact diff. Done when both SHAs are recorded.
 2. **Gather product sources**: PR description, linked tickets/specs, ADRs, domain docs, repo instructions. Only these state intent; tests and implementation are evidence to check against them.
-3. **Audit each production file** (human-authored, non-test, non-generated) through all four categories. For each behavior the file changes, check it against the product sources and the tests that exercise it, and assign one status. Done when every production file has, for each of the four categories, findings or a reason the category does not apply.
+3. **Audit each production file** (human-authored, non-test, non-generated) through all five categories. For each behavior the file changes, check it against the product sources and the tests that exercise it, and assign one status. Before calling a category *Confirmed*, enumerate in your working notes every changed behavior it covers, each paired with the source line and the test assertion that settle it; any behavior left unpaired becomes a finding. Done when every production file has, for each of the five categories, findings, an enumeration backing *Confirmed*, or a reason the category does not apply.
 4. **Write the report** in the format below. Done when every finding has its `###` heading and all six fields, one sentence each.
 
 ## Reference
 
-**Categories** — the four risk types audited in every file:
+**Categories** — the five risk types audited in every file:
 
 | ID prefix | Category | Checks |
 |-----------|----------|--------|
@@ -25,6 +25,7 @@ The product is a **decision list**: for every production file the PR changes, ea
 | `N` | NULL/EMPTY | Null, empty, and whitespace-only input. |
 | `A` | AUTHORIZATION | Role × endpoint matrix: 401/403 versus 200. |
 | `I` | INJECTION | SQL/NoSQL, XSS, command, and path-traversal payloads. |
+| `S` | STATE | Lifecycle, idempotency, retries, replay, and effects of edit/delete on later requests. |
 
 **IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus a number counting up across the whole report, `B-1`, `B-2`, `N-1`, `A-1`.
 
@@ -46,7 +47,7 @@ Write to the path the user gives; otherwise to a clearly named file outside the 
 ```markdown
 # PR audit <number>: <title>
 base `<sha>` · head `<sha>` · <date>
-BOUNDARY <n> · NULL/EMPTY <n> · AUTHORIZATION <n> · INJECTION <n>
+BOUNDARY <n> · NULL/EMPTY <n> · AUTHORIZATION <n> · INJECTION <n> · STATE <n>
 PENDING_USER <n> · CONTRADICTION <n> · NO_EVIDENCE <n>
 
 ## `<path/to/file>`
@@ -67,7 +68,7 @@ Not applicable: INJECTION — the file takes no external input.
 - One `##` section per production file, in diff order; one `###` per finding, titled `<ID> - <short behavior>`. *Confirmed* lists each category the file passes with every behavior `CONFIRMED`; those behaviors get no ID and no section.
 - Both count lines count only findings that need action.
 - *Not applicable* lists each category with no findings in that file, with its reason.
-- *Finding* cites `file:line` and the source or test involved.
+- *Finding* cites `file:line` for the code and `file:line` for the spec or test involved, e.g. `spec.md:89`, never the source by name alone.
 - *Proposal* is the concrete change the auditor recommends.
 - *Decision* is the one question the user answers: the product question for `PENDING_USER`, "Apply proposal?" otherwise.
 - Files the audit could not examine go in one final line: `Not reviewed: <path> — <reason>`.
