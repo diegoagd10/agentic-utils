@@ -21,7 +21,7 @@ One audit run of a PR against its spec. The `pr-spec-audit` orchestrator dispatc
 | `I` | INJECTION | SQL/NoSQL, XSS, command, and path-traversal payloads. |
 | `S` | STATE | Lifecycle, idempotency, retries, replay, and effects of edit/delete on later requests. |
 
-**IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus a number counting up across the whole report, `B-1`, `B-2`, `N-1`, `A-1`.
+**IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus that prefix's own counter, starting at 1 and counting up across the whole report: `B-1`, `B-2`, `S-1`, `S-2`, `I-1`.
 
 **Status** — exactly one per finding:
 

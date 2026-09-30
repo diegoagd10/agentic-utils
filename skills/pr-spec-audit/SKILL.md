@@ -24,7 +24,7 @@ Two audits of the same diff surface different findings. This skill runs two **bl
 - **Status or risk differs**: re-derive it from the cited source and test lines. A genuinely ambiguous source makes it `PENDING_USER`. Risk takes the higher value unless verification rules it out.
 - **One finding bundles defects of different risk**: split it into one finding per defect, each with its own risk.
 - **A category is *Confirmed*** only when no kept finding in that file falls in it and at least one run confirmed it. The line lists category names only.
-- **IDs** are reassigned so they count up without gaps across the reconciled report.
+- **IDs** are reassigned in report order, each prefix with its own counter from 1: `B-1`, `B-2`, `S-1`, `I-1`.
 
 ## Reconciled report
 
