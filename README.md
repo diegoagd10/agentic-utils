@@ -18,7 +18,7 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 
 | Skill | Purpose |
 | --- | --- |
-| [PR contract audit](skills/pr-contract-audit/SKILL.md) | Audit every production file in a PR for boundary, null/empty, authorization, and injection risks, then produce an editable Markdown decision list. |
+| [PR contract audit](skills/pr-contract-audit/SKILL.md) | Audit every production file in a PR for boundary, null/empty, authorization, injection, and state risks, then produce an editable Markdown decision list. |
 
 To install the PR contract audit skill for Codex and Claude Code, link it into the shared `~/.agents/skills/` directory and point Claude at that link:
 
