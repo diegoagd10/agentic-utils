@@ -16,6 +16,12 @@ The prompt comes from [Cairn's `alternative` branch README](https://github.com/d
 
 Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md](skills/README.md) for the layout.
 
+| Skill | Purpose |
+| --- | --- |
+| [PR contract audit](skills/pr-contract-audit/SKILL.md) | Review a PR's behavioral assumptions and test evidence, then produce an editable Markdown report for product decisions. |
+
+To install the PR contract audit skill for your user, copy its directory into `~/.codex/skills/`. Invoke it as `$pr-contract-audit` with a PR URL or fixed Git diff. The audit writes a Markdown draft outside the target repository until its decisions have been reviewed.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
