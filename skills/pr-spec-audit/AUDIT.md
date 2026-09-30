@@ -1,16 +1,10 @@
----
-name: pr-contract-audit
-description: Audit every production file in a PR for boundary, null/empty, authorization-matrix, injection, and state risks, producing a terse Markdown decision list.
-disable-model-invocation: true
----
+# PR spec audit: one run
 
-# PR contract audit
-
-The product is a **decision list**: for every production file the PR changes, each finding with its ID, category, status, risk, proposal, and the decision the user must make. The audit is read-only: production code, tests, and the user's checkout stay untouched.
+One audit run of a PR against its spec. The `pr-spec-audit` orchestrator dispatches two independent runs from this file; your brief gives the PR, the base and head SHAs, and your output path. The product is a **decision list**: for every production file the PR changes, each finding with its ID, category, status, risk, proposal, and the decision the user must make. The audit is read-only: production code, tests, and the user's checkout stay untouched.
 
 ## Steps
 
-1. **Fix the diff.** Resolve the base and head SHAs and audit that exact diff. Done when both SHAs are recorded.
+1. **Fix the diff.** Audit exactly the base and head SHAs from your brief.
 2. **Gather product sources**: PR description, linked tickets/specs, ADRs, domain docs, repo instructions. Only these state intent; tests and implementation are evidence to check against them.
 3. **Audit each production file** (human-authored, non-test, non-generated) through all five categories. For each behavior the file changes, check it against the product sources and the tests that exercise it, and assign one status. Before calling a category *Confirmed*, enumerate in your working notes every changed behavior it covers, each paired with the source line and the test assertion that settle it; any behavior left unpaired becomes a finding. Done when every production file has, for each of the five categories, findings, an enumeration backing *Confirmed*, or a reason the category does not apply.
 4. **Write the report** in the format below. Done when every finding outside a *Low test gaps* line has its `###` heading and all six fields, one sentence each.
@@ -42,7 +36,7 @@ The product is a **decision list**: for every production file the PR changes, ea
 
 ## Report format
 
-Write to the path the user gives; otherwise to a clearly named file outside the repository. Write the report in English, whatever language the user or the sources use. The report contains exactly this:
+Write to the output path in your brief. Write the report in English, whatever language the user or the sources use. The report contains exactly this:
 
 ```markdown
 # PR audit <number>: <title>
@@ -76,4 +70,4 @@ Not applicable: INJECTION — the file takes no external input.
 - *Decision* is the one question the user answers: the product question for `PENDING_USER`, "Apply proposal?" otherwise.
 - Files the audit could not examine go in one final line: `Not reviewed: <path> — <reason>`.
 
-The final reply is the report link plus the two count lines.
+Your final reply is the report path plus the two count lines.
