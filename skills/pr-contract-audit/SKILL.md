@@ -26,7 +26,7 @@ The product is a **decision list**: for every production file the PR changes, ea
 | `A` | AUTHORIZATION | Role × endpoint matrix: 401/403 versus 200. |
 | `I` | INJECTION | SQL/NoSQL, XSS, command, and path-traversal payloads. |
 
-**IDs** are the prefix plus a number counting up across the whole report: `B-1`, `B-2`, `N-1`, `A-1`.
+**IDs** go only to findings that need action (every status except `CONFIRMED`): the prefix plus a number counting up across the whole report, `B-1`, `B-2`, `N-1`, `A-1`.
 
 **Status** — exactly one per finding:
 
@@ -47,7 +47,7 @@ Write to the path the user gives; otherwise to a clearly named file outside the 
 # PR audit <number>: <title>
 base `<sha>` · head `<sha>` · <date>
 BOUNDARY <n> · NULL/EMPTY <n> · AUTHORIZATION <n> · INJECTION <n>
-PENDING_USER <n> · CONTRADICTION <n> · NO_EVIDENCE <n> · CONFIRMED <n>
+PENDING_USER <n> · CONTRADICTION <n> · NO_EVIDENCE <n>
 
 ## `<path/to/file>`
 
@@ -60,11 +60,12 @@ PENDING_USER <n> · CONTRADICTION <n> · NO_EVIDENCE <n> · CONFIRMED <n>
 - **Proposal**: Reject with 403.
 - **Decision**: Can read-only users delete drafts?
 
-Confirmed: `B-2`, `N-1`
+Confirmed: BOUNDARY, NULL/EMPTY
 Not applicable: INJECTION — the file takes no external input.
 ```
 
-- One `##` section per production file, in diff order; one `###` per finding, titled `<ID> - <short behavior>`. `CONFIRMED` findings go only in the *Confirmed* line.
+- One `##` section per production file, in diff order; one `###` per finding, titled `<ID> - <short behavior>`. *Confirmed* lists each category the file passes with every behavior `CONFIRMED`; those behaviors get no ID and no section.
+- Both count lines count only findings that need action.
 - *Not applicable* lists each category with no findings in that file, with its reason.
 - *Finding* cites `file:line` and the source or test involved.
 - *Proposal* is the concrete change the auditor recommends.
