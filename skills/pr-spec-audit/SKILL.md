@@ -22,7 +22,8 @@ Two audits of the same diff surface different findings. This skill runs two **bl
 - **Both runs report it**: keep one finding with the sharper *Finding* and *Proposal*. *Found by*: `both`.
 - **One run reports it, the other confirms the category**: verify the cited lines. Keep it when the defect is real (*Found by*: `one run, verified`); otherwise drop it with the reason.
 - **Status or risk differs**: re-derive it from the cited source and test lines. A genuinely ambiguous source makes it `PENDING_USER`. Risk takes the higher value unless verification rules it out.
-- **A category is *Confirmed*** only when no kept finding in that file falls in it and at least one run confirmed it.
+- **One finding bundles defects of different risk**: split it into one finding per defect, each with its own risk.
+- **A category is *Confirmed*** only when no kept finding in that file falls in it and at least one run confirmed it. The line lists category names only.
 - **IDs** are reassigned so they count up without gaps across the reconciled report.
 
 ## Reconciled report
