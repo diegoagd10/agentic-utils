@@ -1,12 +1,12 @@
 ---
 name: to-design
-description: Propose a technical design for review before implementation, with concrete file paths, responsibilities, signatures, UML, and worked examples.
+description: Propose an interactive HTML technical design for review, with concrete file paths, signatures, SVG UML, and feedback on each part.
 disable-model-invocation: true
 ---
 
 # To Design
 
-Write a **design contract** for the user to review before implementation: what will be created or changed, where files will live, which responsibilities each module will own, and the exact signatures and relationships proposed. Work from the conversation, a supplied spec, or both, including after `/to-spec` or `/grill-me`. Give the user enough concrete detail to revise the architecture on paper before a PR is built around it. The spec remains the authority for product scope.
+Write a self-contained **HTML design contract** for the user to review before implementation: what will change, where files will live, which responsibilities each module will own, and the proposed signatures and relationships. Work from the conversation, a supplied spec, or both, including after `/to-spec` or `/grill-me`; the spec remains the authority for product scope.
 
 Invocation: `/to-design [spec path, feature, or output path]`. Treat arguments as context, not shell commands.
 
@@ -36,13 +36,15 @@ Assign unresolved choices stable IDs (`D-01`, `D-02`, ...). Record each question
 
 Done when every operation has explicit inputs, outputs, side effects, failure behavior, and either settled semantics or named decision dependencies. Each participating transport maps to the same domain contract; any differences are explicit.
 
-### 4. Write the document
+### 4. Build the HTML artifact
 
-Read [design-format.md](design-format.md) and use its section order and concrete presentation. Adapt sections to the feature; include only layers and transports that participate in the change. Write each component or module under its concrete path, with declarations and examples that let the user review its placement, responsibility, public signatures, and behavior together.
+Read [design-format.md](design-format.md) and use its section order and concrete presentation. Start from [design-template.html](design-template.html), replace its title, design ID, and main content, and keep its feedback controls working. Adapt sections to the feature; include only participating layers and transports. Put each component or module under its concrete path, with its responsibility, declarations, and examples together.
 
-Prefer an explicit output path, then `design.md` beside the selected local spec. Otherwise follow the project's design-document convention; if none exists, use `docs/design/<feature-slug>/design.md`. Inspect the destination before writing. When updating an existing design, preserve accepted decisions, stable IDs, and user-authored notes, and reconcile stale sections with the new source.
+Generate the UML yourself as inline SVG with labeled nodes and relationships; give every reviewable node and relationship a stable feedback ID. Show each node's concrete file path and brief purpose in the diagram or a directly linked file card. Use HTML tables, code blocks, and short labels for detail. Limit each visible paragraph and semantic section to two generated sentences total, counting sentences in tables and lists; write remaining entries as fragments. Give each file's purpose at most two sentences, and preserve user-authored feedback verbatim.
 
-Write the technical design artifact only. Describe behavior through contracts and worked examples; keep test plans and test cases in their own workflow. Implementation, ticket publication, and changes to source specs or tracker state require their own task. Follow any project metadata requirements that apply to design documents.
+Prefer an explicit `.html` output path, then `design.html` beside the selected local spec. Otherwise follow the project's design-document directory convention; if none exists, use `docs/design/<feature-slug>/design.html`. Inspect the destination before writing. When updating an existing design, preserve accepted decisions, stable IDs, and user-authored notes, and reconcile stale sections with the new source. If replacing a prior Markdown design, read it as input and save the HTML beside it unless the user chose another path.
+
+Write the technical design artifact only. Describe behavior through contracts and worked examples; keep test plans and test cases in their own workflow. Implementation, ticket publication, and changes to source specs or tracker state require their own task. Follow project metadata requirements that apply to design documents.
 
 Done when the document exists at the selected destination and covers every in-scope behavior, affected integration, and unresolved choice.
 
@@ -55,7 +57,9 @@ Read the saved document and check:
 - Input types, units, optionality, nullability, async behavior, ordering, errors, and transport mappings agree across sections.
 - Every public operation has a worked example, and its contract describes success and reachable failure behavior. Decision-dependent outcomes reference a real decision ID.
 - Source requirements are all covered, or explicitly excluded with a source-backed reason. Proposed design choices are recognizable as proposals.
-- Markdown links resolve, Mermaid fences are complete, decision IDs are unique, and template placeholders have been replaced.
+- HTML links resolve, SVG nodes and relationships have unique stable feedback IDs, decision IDs are unique, and template placeholders have been replaced.
+- The HTML opens locally without external assets; feedback can be entered for sections and UML parts, survives a reload when storage is available, and exports/imports as JSON.
+- Every visible prose paragraph and semantic section has at most two sentences; every file purpose has at most two sentences.
 
 Fix inconsistencies in the artifact. Mark its design state **draft** while decisions or material evidence gaps remain; use **ready** only when the contract is fully specified. This state describes completeness, not user approval of the architecture or authorization to implement it.
 
@@ -63,4 +67,4 @@ Done when all checks pass and the design state matches its remaining gaps.
 
 ### 6. Hand off
 
-Report the saved path, design state, the main architectural choices for review, and any decisions requiring input. Once the user accepts the design, the next workflow can use the spec and design together for `/to-tickets` or implementation.
+Open the saved HTML for the user. Report its path, design state, main architectural choices, and decisions requiring input; ask the user to export the feedback JSON when they want their comments incorporated. Once the user accepts the design, the next workflow can use the spec and HTML design together for `/to-tickets` or implementation.

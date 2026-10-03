@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REPLACE_WITH_DESIGN_TITLE</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; background: #f5f7fb; color: #172033; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { padding: 1.5rem max(1.5rem, calc((100vw - 90rem)/2)); background: #15213a; color: white; }
+    h1 { margin: 0 0 .25rem; font-size: clamp(1.5rem, 3vw, 2.5rem); }
+    h2, h3 { line-height: 1.2; }
+    .state { margin: 0; color: #c7dcff; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); gap: 1.5rem; max-width: 90rem; margin: auto; padding: 1.5rem; align-items: start; }
+    main { min-width: 0; }
+    section { position: relative; margin-bottom: 1.25rem; padding: 1.3rem; background: white; border: 1px solid #d7dfeb; border-radius: .8rem; box-shadow: 0 2px 8px #1720330a; }
+    section h2, section h3 { margin: 0 0 .8rem; padding-right: 7rem; }
+    section.has-feedback { border-color: #4b6fac; }
+    .review-button { position: absolute; top: 1rem; right: 1rem; }
+    button, select, textarea { font: inherit; }
+    button { border: 1px solid #4568a0; background: #edf3ff; color: #183d79; border-radius: .45rem; padding: .4rem .7rem; cursor: pointer; }
+    button:hover, button:focus-visible { background: #dce9ff; }
+    button:focus-visible, select:focus-visible, textarea:focus-visible, .uml-part:focus-visible { outline: 3px solid #e59a22; outline-offset: 2px; }
+    .primary { background: #2357a2; color: white; }
+    .primary:hover, .primary:focus-visible { background: #17427d; }
+    .danger { border-color: #a34545; color: #8a2323; background: #fff5f5; }
+    .table-wrap, .diagram-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; vertical-align: top; border-bottom: 1px solid #d7dfeb; padding: .45rem .6rem; }
+    th { background: #edf3fa; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    pre { overflow-x: auto; padding: 1rem; background: #edf3fa; border-radius: .4rem; }
+    svg { display: block; width: 100%; min-width: 38rem; height: auto; }
+    .uml-part { cursor: pointer; pointer-events: bounding-box; }
+    .uml-part rect { fill: #edf3ff; stroke: #4568a0; stroke-width: 2; }
+    .uml-part path, .uml-part line { fill: none; stroke: #4568a0; stroke-width: 3; }
+    .uml-part text { fill: #172033; font: 15px system-ui, sans-serif; }
+    .uml-part:hover rect, .uml-part.has-feedback rect { fill: #dce9ff; stroke: #2357a2; }
+    .uml-part:hover path, .uml-part.has-feedback path { stroke: #2357a2; stroke-width: 5; }
+    aside { position: sticky; top: 1rem; padding: 1.25rem; background: white; border: 1px solid #d7dfeb; border-radius: .8rem; }
+    aside h2 { margin-top: 0; }
+    label { display: block; font-weight: 650; margin-top: 1rem; }
+    select, textarea { display: block; width: 100%; margin-top: .3rem; border: 1px solid #97a7be; border-radius: .4rem; padding: .5rem; background: white; color: #172033; }
+    textarea { min-height: 7rem; resize: vertical; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    #feedback-status { min-height: 1.5em; color: #315785; }
+    [hidden] { display: none !important; }
+    @media (max-width: 55rem) { .layout { display: block; } aside { position: static; margin-top: 1.5rem; } }
+  </style>
+</head>
+<body data-design-id="REPLACE_WITH_STABLE_DESIGN_ID">
+  <header>
+    <h1>REPLACE_WITH_DESIGN_TITLE</h1>
+    <p class="state">Design state: draft</p>
+  </header>
+  <div class="layout">
+    <main id="design">
+      <!-- Replace with the feature's reviewable sections and inline SVG UML. -->
+    </main>
+    <aside aria-label="Feedback del diseño">
+      <h2>Feedback</h2>
+      <p>Selecciona una sección o parte del UML para comentarla. Exporta el JSON para compartir tu feedback.</p>
+      <div id="feedback-editor" hidden>
+        <h3 id="feedback-target"></h3>
+        <form id="feedback-form">
+          <label for="feedback-verdict">Valoración</label>
+          <select id="feedback-verdict">
+            <option value="">Sin valoración</option>
+            <option value="like">Me gusta</option>
+            <option value="change">Cambiaría</option>
+            <option value="question">Pregunta</option>
+          </select>
+          <label for="feedback-note">Nota</label>
+          <textarea id="feedback-note" placeholder="Escribe tu comentario"></textarea>
+          <div class="actions">
+            <button class="primary" type="submit">Guardar</button>
+            <button class="danger" type="button" id="feedback-remove">Quitar</button>
+          </div>
+        </form>
+      </div>
+      <div class="actions">
+        <button type="button" id="feedback-export">Exportar feedback</button>
+        <button type="button" id="feedback-import">Importar feedback</button>
+        <input id="feedback-file" type="file" accept="application/json,.json" hidden>
+      </div>
+      <p id="feedback-status" role="status" aria-live="polite"></p>
+    </aside>
+  </div>
+  <script>
+    (() => {
+      const designId = document.body.dataset.designId;
+      const storageKey = `to-design-feedback:${designId}`;
+      const targets = new Map();
+      const editor = document.getElementById('feedback-editor');
+      const targetTitle = document.getElementById('feedback-target');
+      const verdict = document.getElementById('feedback-verdict');
+      const note = document.getElementById('feedback-note');
+      const status = document.getElementById('feedback-status');
+      let activeId = null;
+      let feedback = {};
+
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) feedback = saved;
+      } catch (_) { /* Export remains available when browser storage is blocked. */ }
+
+      function showStatus(message) { status.textContent = message; }
+      function persist() {
+        try { localStorage.setItem(storageKey, JSON.stringify(feedback)); }
+        catch (_) { showStatus('Exporta el feedback para conservarlo.'); }
+      }
+      function refresh() {
+        for (const [id, element] of targets) {
+          const hasFeedback = Boolean(feedback[id]);
+          element.classList.toggle('has-feedback', hasFeedback);
+          const button = element.querySelector(':scope > .review-button');
+          if (button) button.textContent = hasFeedback ? 'Feedback ✓' : 'Dar feedback';
+        }
+      }
+      function openFeedback(id) {
+        const element = targets.get(id);
+        if (!element) return;
+        activeId = id;
+        targetTitle.textContent = element.getAttribute('aria-label') || element.querySelector('h2, h3')?.textContent || id;
+        verdict.value = feedback[id]?.verdict || '';
+        note.value = feedback[id]?.note || '';
+        editor.hidden = false;
+        verdict.focus();
+      }
+      for (const element of document.querySelectorAll('#design [data-review-id]')) {
+        const id = element.getAttribute('data-review-id');
+        if (!id || targets.has(id)) { showStatus(`ID de feedback duplicado o vacío: ${id}`); continue; }
+        targets.set(id, element);
+        if (element.matches('section')) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'review-button';
+          button.textContent = 'Dar feedback';
+          button.addEventListener('click', () => openFeedback(id));
+          element.append(button);
+        } else if (element.matches('g')) {
+          element.addEventListener('click', () => openFeedback(id));
+          element.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openFeedback(id);
+            }
+          });
+        }
+      }
+      refresh();
+      document.getElementById('feedback-form').addEventListener('submit', event => {
+        event.preventDefault();
+        if (!activeId) return;
+        const value = { verdict: verdict.value, note: note.value.trim() };
+        if (value.verdict || value.note) feedback[activeId] = value;
+        else delete feedback[activeId];
+        persist();
+        refresh();
+        showStatus('Feedback guardado.');
+      });
+      document.getElementById('feedback-remove').addEventListener('click', () => {
+        if (!activeId) return;
+        delete feedback[activeId];
+        verdict.value = '';
+        note.value = '';
+        persist();
+        refresh();
+        showStatus('Feedback quitado.');
+      });
+      document.getElementById('feedback-export').addEventListener('click', () => {
+        const payload = { schemaVersion: 1, designId, feedback };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${designId}-feedback.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showStatus('Feedback exportado.');
+      });
+      const fileInput = document.getElementById('feedback-file');
+      document.getElementById('feedback-import').addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        try {
+          const payload = JSON.parse(await file.text());
+          if (payload.schemaVersion !== 1 || payload.designId !== designId ||
+              !payload.feedback || typeof payload.feedback !== 'object' || Array.isArray(payload.feedback)) {
+            throw new Error('Archivo de feedback incompatible.');
+          }
+          for (const value of Object.values(payload.feedback)) {
+            if (!value || typeof value !== 'object' ||
+                !['', 'like', 'change', 'question'].includes(value.verdict) ||
+                typeof value.note !== 'string') throw new Error('Feedback inválido.');
+          }
+          feedback = payload.feedback;
+          persist();
+          refresh();
+          if (activeId) openFeedback(activeId);
+          showStatus('Feedback importado.');
+        } catch (error) { showStatus(error.message || 'No se pudo importar el archivo.'); }
+        fileInput.value = '';
+      });
+    })();
+  </script>
+</body>
+</html>
