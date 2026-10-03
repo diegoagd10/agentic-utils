@@ -1,66 +1,31 @@
 ---
 name: to-design
-description: Propose a technical design for review before implementation, with concrete file paths, responsibilities, signatures, UML, and worked examples.
+description: Write a short design discussion that shows the shape of the code (current state, patterns, file and call-tree changes, public signatures, decisions) for review before implementation, and iterate on it through inline FB comments.
 disable-model-invocation: true
 ---
 
 # To Design
 
-Write a **design contract** for the user to review before implementation: what will be created or changed, where files will live, which responsibilities each module will own, and the exact signatures and relationships proposed. Work from the conversation, a supplied spec, or both, including after `/to-spec` or `/grill-me`. Give the user enough concrete detail to revise the architecture on paper before a PR is built around it. The spec remains the authority for product scope.
+Write a **design discussion**: a ~200-line document that exposes what you found and how you intend to shape the code, so the user can correct direction before any implementation exists. It shows the shape of the code (files, call trees, public signatures), not its bodies. The spec remains the authority for product scope.
 
-Invocation: `/to-design [spec path, feature, or output path]`. Treat arguments as context, not shell commands.
+Invocation: `/to-design [spec path, feature, design path, or output path]`. Treat arguments as context, not shell commands. If the argument is an existing design with non-empty `FB:` comments, go to **Iterate**.
 
-## Process
+## Create
 
-### 1. Gather the decisions
+1. **Gather.** Read the supplied spec in full, or extract the agreed goal, scope, and decisions from the conversation. Follow project instructions for domain docs and ADRs. Done when every in-scope behavior has a source.
+2. **Ground.** Trace the affected code paths, callers, and registries. Note the patterns the change should copy and the ones it should not (deprecated, inconsistent, or contradicting an ADR), each with `file:line`. Check that every new import keeps the existing dependency direction between layers, or make the reversal a decision. Done when every proposed change has a place to live and a pattern to follow.
+3. **Ask before writing.** Present 3–5 questions that need human judgment, each with concrete options grounded in `file:line` and your recommendation. Skip questions the source already settles. Wait for answers. Done when the user has answered or told you to proceed with your recommendations.
+4. **Write.** Follow [design-format.md](design-format.md). Prefer an explicit output path, then `design.md` beside the spec, then the project's convention, then `docs/design/<feature-slug>/design.md`. Inspect the destination before writing. Done when the file exists.
+5. **Check.** Re-read the document: names match across sections, every `file:line` exists, no template placeholders remain, every section, view, and contract ends with an empty `> FB:` slot, no code-block line exceeds 80 characters, Current state stays within ~30 lines, schema/migration/transport changes take one line each, and the document stays near 200 lines without slots. Done when all hold.
+6. **Hand off.** Report the path, the 2–3 choices most worth the user's review, and any open decisions. Tell the user to write after any `> FB:` slot (or `// FB:` inside code) and rerun `/to-design <path>`.
 
-Read the supplied source in full, including linked clarifications and comments. For a conversation-only invocation, extract the agreed goal, scope, constraints, and decisions from the conversation. Follow project instructions for domain docs, ADRs, and issue-tracker operations before exploring or locating documents.
+## Iterate
 
-Use the current feature when it is unambiguous. Ask for the source or feature only when the available context cannot identify what to design. Reuse the completed interview; capture remaining decisions in the document rather than starting another grilling session.
+The user reviews by writing after the empty `> FB:` slots, or adding `> FB: <comment>` lines under any content. Inside a code block, they write the comment in that language's comment syntax (`// FB: …`, `# FB: …`) on the line below the code it targets.
 
-Done when each in-scope behavior and agreed decision has a source, and conflicting or missing decisions have been identified.
+1. **Collect.** Read the whole design, then list every non-empty, unresolved `FB:` comment, in prose or in code, with the section and line it targets. Done when the count is known.
+2. **Resolve each comment where it sits.** Research only what the comment requires. Make the smallest edit that addresses it, and update every other section it affects so names stay consistent. If you disagree or the comment is ambiguous, leave the content unchanged and reply instead.
+3. **Mark it.** Replace the comment line with `> ✅ FB: <original> → <what changed>`, or `> 💬 FB: <original> → <your question or objection>` when you replied without changing. Write the reply in the comment's language. Leave exactly one empty `> FB:` slot at the end of the block. Never renumber decision IDs. For a comment inside a code block, remove it from the code and put the marked line right after the block, naming what it targeted. Never delete the user's words.
+4. **Report** `<resolved>/<total>` and list each 💬 reply that needs the user. Do not rewrite sections nobody commented on.
 
-### 2. Ground the design
-
-Inspect the affected implementation, callers, exports, route/tool registries, and persistence. Follow the actual call paths far enough to identify integrations outside the feature. Use the project's domain vocabulary and flag any proposed contradiction with an ADR by name and rationale.
-
-Distinguish **existing**, **modified**, **new**, and **removed** files. Verify existing symbols and signatures; label proposed symbols as proposed. Follow the project's architectural constraints and language conventions, including asynchronous returns. When restructuring is in scope, show which existing boundaries change and why. Choose modules and layers for the feature's responsibilities.
-
-Done when every proposed operation has an entry point, an owner for its rules, a persistence or side-effect path where applicable, and identified callers affected by the change.
-
-### 3. Resolve the contract on paper
-
-Translate accepted decisions into concrete interfaces, data shapes, invariants, errors, and examples. Treat observed code as current behavior, not automatic approval of future behavior. Label new architectural choices as proposals unless the source already settles them.
-
-Assign unresolved choices stable IDs (`D-01`, `D-02`, ...). Record each question, options, recommendation with rationale, and affected operations once in the decision ledger. Reference those IDs from dependent sections. Keep accepted assertions separate from outcomes that depend on a pending decision.
-
-Done when every operation has explicit inputs, outputs, side effects, failure behavior, and either settled semantics or named decision dependencies. Each participating transport maps to the same domain contract; any differences are explicit.
-
-### 4. Write the document
-
-Read [design-format.md](design-format.md) and use its section order and concrete presentation. Adapt sections to the feature; include only layers and transports that participate in the change. Write each component or module under its concrete path, with declarations and examples that let the user review its placement, responsibility, public signatures, and behavior together.
-
-Prefer an explicit output path, then `design.md` beside the selected local spec. Otherwise follow the project's design-document convention; if none exists, use `docs/design/<feature-slug>/design.md`. Inspect the destination before writing. When updating an existing design, preserve accepted decisions, stable IDs, and user-authored notes, and reconcile stale sections with the new source.
-
-Write the technical design artifact only. Describe behavior through contracts and worked examples; keep test plans and test cases in their own workflow. Implementation, ticket publication, and changes to source specs or tracker state require their own task. Follow any project metadata requirements that apply to design documents.
-
-Done when the document exists at the selected destination and covers every in-scope behavior, affected integration, and unresolved choice.
-
-### 5. Audit consistency
-
-Read the saved document and check:
-
-- Every file-map export, diagram node, interface, and example refers to the same names and responsibilities.
-- The user can locate each proposed public signature under its owning file and trace its callers and dependencies without reading implementation code.
-- Input types, units, optionality, nullability, async behavior, ordering, errors, and transport mappings agree across sections.
-- Every public operation has a worked example, and its contract describes success and reachable failure behavior. Decision-dependent outcomes reference a real decision ID.
-- Source requirements are all covered, or explicitly excluded with a source-backed reason. Proposed design choices are recognizable as proposals.
-- Markdown links resolve, Mermaid fences are complete, decision IDs are unique, and template placeholders have been replaced.
-
-Fix inconsistencies in the artifact. Mark its design state **draft** while decisions or material evidence gaps remain; use **ready** only when the contract is fully specified. This state describes completeness, not user approval of the architecture or authorization to implement it.
-
-Done when all checks pass and the design state matches its remaining gaps.
-
-### 6. Hand off
-
-Report the saved path, design state, the main architectural choices for review, and any decisions requiring input. Once the user accepts the design, the next workflow can use the spec and design together for `/to-tickets` or implementation.
+On the next pass, treat `✅` lines as done. A `💬` line the user answered beneath with a new `> FB:` is unresolved again. Remove `✅` lines only when the user asks to clean up.
