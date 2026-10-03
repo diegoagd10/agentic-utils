@@ -1,90 +1,132 @@
-# Design document format
+# Design discussion format
 
-Write a concrete proposal the user can inspect before implementation: file map, UML, path-based sections, declarations, UI snippets, transport schemas, worked examples, and pending contract decisions. Make file placement, module responsibilities, public signatures, and relationships visible together. Derive architecture, names, units, transports, and policies from the feature being designed.
+Aim for ~200 lines. Show the smallest view that makes each point clear, and put each visual next to the sentence it supports. Show shape, not implementation: no function bodies, no request/response dumps, no per-endpoint error tables. Omit a section when the feature has nothing for it.
 
-Use the sections below in this order. Omit conditional sections when the feature has no corresponding concern. Put shared rules in their owning section and reference them from callers. Keep every invariant in one authoritative place.
+```markdown
+# <Feature> — design
 
-## Title and goal
+Source: <spec link or "conversation, <date>">
 
-Start with `# <Feature> design — <organizing decision>` and a `Design state: draft | ready` line. Link the source spec or identify the conversation decisions used. State the goal, scope, key domain meanings, and relevant constraints in a short `## Goal` section. Mark material evidence gaps explicitly.
+> Review: write after any `> FB:` (inside code: `// FB: …`), then run `/to-design <this file>`.
 
-## File map
+## Summary
+3–5 lines: what changes and the organizing decision behind it.
 
-Use `## File map` with this table:
+> FB:
 
-| File | Change | Export / kind | Responsibility |
-| --- | --- | --- | --- |
-| Concrete repository-relative path | Existing / modified / new / removed | Exact symbol and function/class/type/etc. | One concrete responsibility |
+## Current state
+How it works today, at most ~30 lines. One short call tree per entry point the change touches, each under its own `###` heading. Other affected readers get one line each.
 
-Include affected public exports and registration points. Group shared helpers or integrations outside the feature under a separate subheading. Account for moved-file origins and consumers whose imports must change. Explain the feature's organizing decision and why a helper belongs inside or outside it.
+> FB:
 
-## UML
+## Desired end state
+What is true when this ships, and how a reviewer can verify it.
 
-Use `## UML` with a fenced Mermaid diagram showing callers, rule-owning modules, persistence, models, helpers, and external integrations that matter to this design. Use `classDiagram` for class-based designs; use a dependency `flowchart` when functions/modules describe the architecture better.
+> FB:
 
-Label function modules, model types, UI functions, exception classes, and external nodes accurately. Draw dependencies that match the contract; label runtime calls and type relationships distinctly. Prefer responsibilities and important operations over every private method. Add a short legend when needed.
+## Patterns
+- Follow: <pattern> — `file:line`
+- Avoid: <pattern> — `file:line` — why
 
-## Utilities
+> FB:
 
-Use `## Utilities — <path>` for domain helpers. Include their purpose, exported declarations, and compact function bodies when these clarify response shaping or formatting. Distinguish public response shapes from internal models and display conversions from stored values. Show client/server export boundaries when relevant.
+## Shape of the code
+<views below>
 
-## UI
+## Decisions
+### Settled
+- **D-01 <decision>:** <choice> — <why>. Rejected: <alternative> because <reason>.
+### Open
+- **D-02 <question>** — options: A / B. Recommend A because <reason>.
 
-Under `## UI`, give each participating surface a `### <Component> — <path>` heading, concrete props or public interface, and a compact structural snippet or state model. Show the fields, actions, and conditional create/edit/delete states that matter. Describe loading/empty/error states, validation feedback, accessibility/focus behavior, and navigation or refresh effects that belong to the feature.
+> FB:
 
-Keep snippets focused on decisions and interactions; the document specifies behavior rather than supplying a complete implementation.
+## Not doing
+- <excluded scope> — <why>
 
-## Controllers and transports
+> FB:
 
-Group entry points under `## Controllers` and/or transport-specific headings such as `## MCP tools`, matching the actual application.
+## Review
+General comments that don't belong to one section.
 
-For each web action, HTTP endpoint, command, event handler, or tool:
+> FB:
+```
 
-- Give its concrete path, exported signature or registration name, and authentication/authorization source.
-- Define accepted inputs, validation/mapping, delegation to the rule-owning module, success output, and error mapping.
-- Identify registration, permissions/scopes, response headers, redirects, metadata, or output schemas when they are part of its contract.
-- Include a worked request/response or invocation/result example for each operation. Use exact values that obey the model and any clock/locale assumptions.
+## Comment slots
 
-For HTTP, use a method/input/delegation/success table followed by an operation subsection for each endpoint behavior. Show actual request/response pairs, status codes, headers, query encoding, and body shapes. Map transport fields to domain inputs explicitly when their shapes differ.
+End every `##` section, every `###` view, and every `####` contract with exactly one empty `> FB:` line, so the reviewer always has a visible place to write under the thing they are reviewing. Slots don't count toward the ~200 lines.
 
-For tools, show a representative registration declaration with its name, permissions/scopes, input/output schemas, annotations, and handler delegation where supported. Follow it with input and structured-output examples. Document text output separately, and distinguish registry/schema refusal from handler-generated errors. Give registration and shared error behavior their own subsection.
+## Decisions
 
-Reuse example IDs, values, clock, locale, and initial state across equivalent transports so readers can compare results. Explain shared rules and presentation differences, including follow-up reads or summaries after a mutation.
+Number decisions `D-01`, `D-02`, … in this document's own sequence; cite spec decisions as "spec D-06". Never renumber an existing ID, because the spec and comments refer to it: a superseded decision keeps its ID and says which one replaced it, and a new decision takes the next unused number. Record design choices only, not actions taken such as edits to the spec. Write neutrally: attribute a user's choice as "(user, <date>)", never "you" or "your answer".
 
-## Exceptions and errors
+## Readability
 
-Use `## Exceptions — <path>` or the project's result/error equivalent. Show typed errors, codes, and representative declarations. Use a failure/cause/handler-behavior table covering each participating transport. Specify which module validates, which catches/translates, and how unexpected failures propagate. Explain how nullable persistence results become domain failures and how missing and foreign targets are exposed to callers.
+Reviewers read this in Markdown viewers such as Obsidian, where code blocks do not wrap.
 
-## Rule-owning interfaces
+- Keep every line inside a code block under 80 characters. Split wide content into more blocks instead.
+- One column per block: never place two trees or tables side by side.
+- Put `file:line` at the end of a line as a `# file:line` comment, not between names.
+- Prefer a bullet over a dense paragraph; keep each bullet to one idea.
 
-Give each participating service/domain module a heading such as `## Service interface — <path>` and a representative interface in the project's language. Name every public operation with concrete parameter and return types. Pair signatures with the caller contract: invariants, creation versus update semantics, immutable fields, validation, ownership, ordering, idempotency, and failure behavior as applicable.
+Current state example:
 
-Make transaction boundaries and multi-step side effects explicit. State what remains persisted when a later step fails, or reference the pending decision that controls it. Match promises/async returns and nullable results to the proposed implementation model.
+````markdown
+### Session page — src/routes/session.tsx
 
-## Persistence interfaces
+```text
+loader
+  SessionService.read(sessionId)           # src/sessions/service.ts:42
+action
+  SessionService.archive(sessionId)        # src/sessions/service.ts:87
+```
 
-Use a heading such as `## Repository interface — <path>` for each persistence module. Include concrete signatures, lookup-miss behavior, scoping, ordering, deduplication/count semantics, and atomicity relevant to callers. Keep business rules with their owning module and identify constraints enforced by storage.
+> FB:
+````
 
-## Database and migration
+## Shape of the code
 
-Use `## Database — <schema path>` for schema changes. Name the storage object and list fields, types, nullability, keys, indexes, and mappings to domain values. Under `### Migration`, cover conversions, backfills, existing data, compatibility with deployed consumers, rollout order, and rollback limitations where applicable. Identify irrecoverable historical information rather than inventing it.
+Use the views the change needs; most designs need two or three, each under its own `###` heading. Show changes as `diff` against the existing shape.
 
-State which identities, ownership, and values the migration preserves, and its failure or interruption behavior. If no migration is needed, state that briefly in the persistence section.
+File tree, one responsibility per line. Include registration points (route tables, config) and the consumers whose imports change when a symbol moves:
 
-## Models and helpers
+```diff
+ src/
+ ├── sessions/
+ │   ├── service.ts        # owns session rules
++│   └── archive.ts        # archives idle sessions
+-└── utils/archive.ts
+```
 
-Under `## Models and helpers`, use `### Models — <path>` for concrete model/input/result declarations, followed by `### Example values` with valid values for each input variant and result. Define units, precision, time/zone representation, normalization, ranges, ordering, and tie-breakers where applicable. Explain internal versus public fields and discriminated input variants.
+Call tree for runtime flow:
 
-Put generic shared helpers in a final section such as `## Shared date-time utilities`, with a subheading for each concrete path. Show exported signatures, accepted/rejected input-output examples, callers, and why the helper sits outside the feature. Reference these definitions from earlier contracts instead of repeating their rules.
+```diff
+ submitForm
+   createSession
+     persistPrompt
++    expandSkillMention
+     launchAgent
+```
 
-## Decisions requiring input
+Component tree for UI, with the state that matters:
 
-Include this section when choices remain. Use one entry per stable decision ID:
+```tsx
+<SessionPage> (src/routes/session.tsx)
+  useSessionEvents()
+  <SessionToolbar>
++   <ArchiveButton onArchive />
+```
 
-- **ID:** D-01
-- **Question:** One unresolved policy or architectural choice.
-- **Options:** Concrete alternatives and their tradeoffs.
-- **Recommendation:** Proposed choice and its rationale, explicitly pending user decision.
-- **Affects:** Operation names and contract sections.
+Public signatures only: one block per owning file, under a `####` heading with its path, so the reviewer can comment on each contract separately:
 
-Maintain settled decisions in their owning contract sections. When updating a document, retain their IDs where existing references rely on them.
+````markdown
+#### src/sessions/archive.ts
+
+```ts
+export function archiveIdleSessions(olderThan: Duration): Promise<ArchiveResult>
+```
+
+> FB:
+````
+
+Use a Mermaid sequence or state diagram only when ordering or state transitions are the point. Mention schema changes, migrations, or transport changes in one line each; if one is risky, make it a decision.
