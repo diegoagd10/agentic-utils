@@ -1,6 +1,6 @@
 # Design document format
 
-Write an implementation-facing blueprint: file map, UML, path-based sections, declarations, UI snippets, transport schemas, worked examples, and pending contract decisions. Derive architecture, names, units, transports, and policies from the feature being designed.
+Write a concrete proposal the user can inspect before implementation: file map, UML, path-based sections, declarations, UI snippets, transport schemas, worked examples, and pending contract decisions. Make file placement, module responsibilities, public signatures, and relationships visible together. Derive architecture, names, units, transports, and policies from the feature being designed.
 
 Use the sections below in this order. Omit conditional sections when the feature has no corresponding concern. Put shared rules in their owning section and reference them from callers. Keep every invariant in one authoritative place.
 
