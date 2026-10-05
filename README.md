@@ -18,17 +18,7 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 
 | Skill | Purpose |
 | --- | --- |
-| [PR spec audit](skills/pr-spec-audit/SKILL.md) | Audit every production file in a PR against its spec for boundary, null/empty, authorization, injection, and state risks. Two independent subagent runs are reconciled into one editable Markdown decision list. |
 | [To design](skills/to-design/SKILL.md) | Write a short design discussion showing the shape of the code for review before implementation, and iterate on it through inline `FB:` comments. |
-
-To install the skill for Codex and Claude Code, link it into the shared `~/.agents/skills/` directory and point Claude at that link:
-
-```sh
-ln -s "$PWD/skills/pr-spec-audit" ~/.agents/skills/pr-spec-audit
-ln -s ~/.agents/skills/pr-spec-audit ~/.claude/skills/pr-spec-audit
-```
-
-Invoke it as `$pr-spec-audit` in Codex or `/pr-spec-audit` in Claude Code, with a PR URL or fixed Git diff. The reports are written in English outside the target repository.
 
 ## License
 
