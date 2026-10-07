@@ -92,7 +92,7 @@ Component tree for UI, with the state that matters:
 +   <ArchiveButton onArchive />
 ```
 
-The approved mockup stays in the review page; below the component tree, add one line per screen naming the mockup and its review-page path.
+The review page is temporary, so describe the approved mockup in one line per screen below the component tree.
 
 Public signatures only: one block per owning file, under a `####` heading with its path, so each contract reads on its own:
 
@@ -104,4 +104,4 @@ export function archiveIdleSessions(olderThan: Duration): Promise<ArchiveResult>
 ```
 ````
 
-Use a Mermaid sequence or state diagram only when ordering or state transitions are the point. Mention schema changes, migrations, or transport changes in one line each; if one is risky, make it a decision.
+Mention schema changes, migrations, or transport changes in one line each; if one is risky, make it a decision.

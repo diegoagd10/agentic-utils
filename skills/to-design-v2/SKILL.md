@@ -16,9 +16,9 @@ The review server is `scripts/design-ui.mjs` beside this file; run it as `node <
 
 1. **Gather.** Read the supplied spec in full, or extract the agreed goal, scope, and decisions from the conversation. Follow project instructions for domain docs and ADRs. Done when every in-scope behavior has a source.
 2. **Ground.** Trace the affected code paths, callers, and registries. Note the patterns the change should copy and the ones it should not, each with `file:line`, and check that every new import keeps the existing dependency direction between layers. Keep these notes: every subagent receives them. Done when every proposed change has a place to live and a pattern to follow.
-3. **Open the page.** Copy [assets/template.html](assets/template.html) to `<tmpdir>/to-design-v2-<feature-slug>-<timestamp>.html` (`$TMPDIR`, falling back to `/tmp`; `%TEMP%` on Windows), fill in the header, write part 1 into it, and run `design-ui open <page>`. Tell the user the URL it prints.
+3. **Open the page.** Copy [assets/template.html](assets/template.html) to `<tmpdir>/to-design-v2-<feature-slug>-<timestamp>.html` (`$TMPDIR`, falling back to `/tmp`; `%TEMP%` on Windows), fill in the header, write part 1 into it, and run `design-ui open <page>`. Tell the user the URL it prints. Done when the page is open.
 4. **Review each part in order** (table below). For each: write the part into the page as the active section, run `design-ui wait <page>`, and act on the feedback (see **Feedback**). Move to the next part only when the user approves the current one. Done when part 7 is approved.
-5. **Write `design.md`.** Follow [design-format.md](design-format.md), using only what the user approved. Prefer an explicit output path, then `design.md` beside the spec, then the project's convention, then `docs/design/<feature-slug>/design.md`. Inspect the destination before writing. Then check: names match across sections, every `file:line` exists, no placeholders remain, no code-block line exceeds 80 characters, and Current state stays within ~30 lines.
+5. **Write `design.md`.** Follow [design-format.md](design-format.md), using only what the user approved. Prefer an explicit output path, then `design.md` beside the spec, then the project's convention, then `docs/design/<feature-slug>/design.md`. Inspect the destination before writing. Done when the file exists and these hold: names match across sections, every `file:line` exists, no placeholders remain, no code-block line exceeds 80 characters, and Current state stays within ~30 lines.
 6. **Close.** Run `design-ui close <page> --message "design.md written to <path>"`, then report the path and any open decisions in chat.
 
 Never write `design.md` before part 7 is approved.
@@ -35,7 +35,7 @@ Never write `design.md` before part 7 is approved.
 | 6 | Public signatures | 3 subagents | one row, three approaches |
 | 7 | Decisions + Not doing | you | no options: approve or feedback |
 
-- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`. Mark your recommendation with `data-recommended` on its column and a visible "Recommended" badge. Skip questions the source already settles.
+- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`. Mark your recommendation with a visible "Recommended" badge in its column. Skip questions the source already settles, and skip the part when none remain.
 - **Part 5** exists only when the change touches UI; otherwise skip it and keep the numbering. Each column shows a static mockup of the screen above the component tree that builds it.
 - **Part 7** derives Decisions from the user's picks: each picked column is a Settled decision, and the columns not picked are its `Rejected:` alternatives. Not doing comes from the spec and the answers. Mark this section `data-final`.
 
@@ -74,7 +74,9 @@ The page is one HTML file that grows. The server injects the feedback controls, 
 ```
 
 - `continue` (option parts) or `approve` (no-option parts): the user accepted the part as shown. Mark it approved and write the next part.
-- `feedback`: rework the current part and wait again; don't advance. In an option part, regenerate all three columns of every row that has notes, plus every row when `message` is non-empty; keep the rows the user picked. In a no-option part, rewrite the part itself.
+- `feedback`: rework the current part and wait again; don't advance. In an option part, keep the rows the user picked and regenerate all three columns of every other row. In a no-option part, rewrite the part itself.
 - The user either picks or comments on a row, never both.
-- `timeout`: run `wait` again. Run `wait` in the foreground, attached to your turn, not as a background task.
+- `timeout`: run `wait` again.
 - `ended` or `no_server`: stop and ask the user in chat whether to reopen.
+
+Run `wait` in the foreground, attached to your turn, not as a background task, with your shell tool's longest timeout (10 minutes in Claude Code). `wait` holds for 9 minutes; if your shell's limit is shorter, pass `--timeout <seconds>` below it. Feedback a killed `wait` received is redelivered by the next one.

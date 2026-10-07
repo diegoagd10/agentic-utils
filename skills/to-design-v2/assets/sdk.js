@@ -6,11 +6,15 @@
   const active = parts.filter((p) => !p.hasAttribute("data-approved")).pop();
   const rows = active ? [...active.querySelectorAll("[data-row]")] : [];
   const storeKey = `dui:${location.port}:${active?.dataset.part}`;
+  const sentKey = `dui:${location.port}:sent`;
 
   const state = load() ?? { selections: {}, notes: [], message: "" };
-  let version = null;
-  let working = false;
+  // The server stamps the file's mtime into the page it serves.
+  const version = window.__DUI_MTIME__;
+  // Feedback sent for this version stays "working" across reloads.
+  let working = sessionStorage.getItem(sentKey) === String(version);
   let ended = false;
+  let selecting = false;
 
   injectStyles();
   const bar = buildBar();
@@ -57,7 +61,8 @@
         if (ui(e.target) || working || ended) return;
         e.preventDefault();
         e.stopPropagation();
-        if (String(getSelection()).trim()) return;
+        // The click that ends a text selection already opened its note.
+        if (selecting) return void (selecting = false);
         openNote({ element: e.target });
       },
       true,
@@ -68,6 +73,7 @@
       const text = String(sel).trim();
       if (!text || !active.contains(sel.anchorNode)) return;
       const node = sel.anchorNode.parentElement;
+      selecting = true;
       openNote({ element: node, excerpt: text });
     });
   }
@@ -260,6 +266,7 @@
       return;
     }
     localStorage.removeItem(storeKey);
+    sessionStorage.setItem(sentKey, String(version));
     working = true;
     status("Agente trabajando…");
     render();
@@ -272,15 +279,16 @@
       try {
         const res = await fetch("/__version", { cache: "no-store" });
         const v = await res.json();
-        if (version !== null && v.mtime !== version) return location.reload();
-        version = v.mtime;
+        if (v.mtime !== version) return location.reload();
         if (v.ended) {
           ended = true;
           status(v.ended.message || "Sesión terminada.");
           render();
           return;
         }
-        if (!working) {
+        if (working) {
+          status("Agente trabajando…");
+        } else {
           status(
             v.listening
               ? ""

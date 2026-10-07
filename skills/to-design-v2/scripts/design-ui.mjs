@@ -2,8 +2,9 @@
 // Local review server for /to-design-v2. Zero dependencies.
 //
 //   design-ui open  <design.html>               start server, open browser
-//   design-ui wait  <design.html>               block until the user sends
+//   design-ui wait  <design.html> [--timeout s] block until the user sends
 //   design-ui close <design.html> [--message m] end the session
+//   design-ui serve <design.html>               the server itself (internal)
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -16,13 +17,13 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SDK_PATH = path.join(HERE, "..", "assets", "sdk.js");
 const SESSIONS_DIR = path.join(os.tmpdir(), "to-design-v2-sessions");
-const WAIT_MS = 9 * 60 * 1000;
+const DEFAULT_WAIT_S = 540;
 const IDLE_MS = 30 * 60 * 1000;
 
 const [command, target, ...rest] = process.argv.slice(2);
 
 if (!command || !target) {
-  fail("usage: design-ui <open|wait|close|serve> <design.html> [--message m]");
+  fail("usage: design-ui <open|wait|close|serve> <design.html> [options]");
 }
 
 const file = path.resolve(target);
@@ -78,11 +79,20 @@ async function wait() {
     print({ status: "no_server", next: "run `design-ui open` again" });
     process.exit(1);
   }
-  // A dropped connection leaves the feedback queued for the next wait.
-  const res = await fetch(`${server.url}/__wait`, {
-    signal: AbortSignal.timeout(WAIT_MS + 30_000),
+  const seconds = Number(flag("--timeout") ?? DEFAULT_WAIT_S);
+  const res = await fetch(`${server.url}/__wait?timeout=${seconds}`, {
+    signal: AbortSignal.timeout((seconds + 30) * 1000),
   });
-  process.stdout.write((await res.text()) + "\n");
+  const body = await res.text();
+  process.stdout.write(body + "\n");
+  // Until acked, the next wait redelivers it, so a killed wait loses nothing.
+  const { id } = JSON.parse(body);
+  if (id) {
+    await fetch(`${server.url}/__ack`, {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    });
+  }
 }
 
 async function close() {
@@ -91,8 +101,7 @@ async function close() {
     print({ status: "closed" });
     return;
   }
-  const i = rest.indexOf("--message");
-  const message = i >= 0 ? rest[i + 1] ?? "" : "";
+  const message = flag("--message") ?? "";
   await fetch(`${server.url}/__end`, {
     method: "POST",
     body: JSON.stringify({ message }),
@@ -140,6 +149,11 @@ async function poll(fn, timeoutMs) {
   return null;
 }
 
+function flag(name) {
+  const i = rest.indexOf(name);
+  return i >= 0 ? rest[i + 1] : undefined;
+}
+
 function print(value) {
   process.stdout.write(JSON.stringify(value) + "\n");
 }
@@ -154,11 +168,13 @@ function fail(message) {
 function serve() {
   const queue = [];
   const waiters = new Set();
+  let inflight = null;
+  let nextId = 1;
   let ended = null;
-  let lastSeen = Date.now();
+  // Only the agent and sent feedback count: an open tab alone polls forever.
+  let lastActive = Date.now();
 
   const server = http.createServer(async (req, res) => {
-    lastSeen = Date.now();
     const url = new URL(req.url, "http://localhost");
 
     if (req.method === "GET" && url.pathname === "/") {
@@ -178,12 +194,20 @@ function serve() {
     }
     if (req.method === "POST" && url.pathname === "/__feedback") {
       if (ended) return json(res, { error: "session ended" }, 409);
-      queue.push(await readJson(req));
+      lastActive = Date.now();
+      queue.push({ id: nextId++, ...(await readJson(req)) });
       flush();
       return json(res, { ok: true });
     }
     if (req.method === "GET" && url.pathname === "/__wait") {
-      return hold(res);
+      lastActive = Date.now();
+      const seconds = Number(url.searchParams.get("timeout"));
+      return hold(res, (seconds > 0 ? seconds : DEFAULT_WAIT_S) * 1000);
+    }
+    if (req.method === "POST" && url.pathname === "/__ack") {
+      const { id } = await readJson(req);
+      if (inflight?.id === id) inflight = null;
+      return json(res, { ok: true });
     }
     if (req.method === "POST" && url.pathname === "/__end") {
       ended = { message: (await readJson(req)).message ?? "" };
@@ -195,8 +219,8 @@ function serve() {
     send(res, 404, "text/plain", "not found");
   });
 
-  function hold(res) {
-    if (queue.length) return json(res, deliver(queue.shift()));
+  function hold(res, waitMs) {
+    if (inflight || queue.length) return json(res, deliver());
     const waiter = {
       done(body) {
         clearTimeout(waiter.timer);
@@ -206,7 +230,7 @@ function serve() {
     };
     waiter.timer = setTimeout(
       () => waiter.done({ status: "timeout", next: "run wait again" }),
-      WAIT_MS,
+      waitMs,
     );
     res.on("close", () => {
       clearTimeout(waiter.timer);
@@ -217,16 +241,19 @@ function serve() {
 
   function flush() {
     const [waiter] = waiters;
-    if (waiter && queue.length) waiter.done(deliver(queue.shift()));
+    if (waiter && (inflight || queue.length)) waiter.done(deliver());
   }
 
-  function deliver(feedback) {
-    return { status: "feedback", ...feedback };
+  function deliver() {
+    inflight ??= queue.shift();
+    return { status: "feedback", ...inflight };
   }
 
   function page() {
     const html = fs.readFileSync(file, "utf8");
-    const tag = '<script src="/__sdk.js" defer></script>';
+    const tag =
+      `<script>window.__DUI_MTIME__ = ${mtime()};</script>\n` +
+      '<script src="/__sdk.js" defer></script>';
     return html.includes("</body>")
       ? html.replace("</body>", `${tag}\n</body>`)
       : html + tag;
@@ -248,7 +275,7 @@ function serve() {
   }
 
   setInterval(() => {
-    if (!waiters.size && Date.now() - lastSeen > IDLE_MS) shutdown();
+    if (!waiters.size && Date.now() - lastActive > IDLE_MS) shutdown();
   }, 60_000).unref();
 
   server.listen(0, "127.0.0.1", () => {
