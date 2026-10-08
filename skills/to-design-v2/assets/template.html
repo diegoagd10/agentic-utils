@@ -1,10 +1,38 @@
 <!doctype html>
-<html lang="en" style="color-scheme: dark">
+<html lang="LANG" style="color-scheme: dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FEATURE — design review</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    Controls ship in English and Spanish. For any other LANG, keep this
+    block with every value translated; otherwise delete it.
+  -->
+  <script type="application/json" data-dui-strings>
+  {
+    "pick": "Pick this one",
+    "picked": "✓ Picked",
+    "rowHasNotes": "This row has notes: remove them to pick an option.",
+    "pickCleared": "Removed the picked option in that row: pick or comment, not both.",
+    "notePlaceholder": "Your note…",
+    "queueNote": "Add to queue",
+    "cancel": "Cancel",
+    "chatPlaceholder": "General comment on this part…",
+    "send": "Send feedback",
+    "finish": "Approve and write design.md",
+    "continue": "Continue",
+    "approve": "Approve",
+    "part": "part",
+    "feedbackQueued": "Feedback is queued: send or remove it to continue.",
+    "pickEachRow": "Pick an option in every row or send feedback.",
+    "sendFailed": "Could not send ({error}). Your feedback is still queued.",
+    "working": "Agent working…",
+    "ended": "Session ended.",
+    "notListening": "The agent is not listening; your feedback arrives on its next wait.",
+    "offline": "No connection to the server."
+  }
+  </script>
 </head>
 <body class="bg-slate-950 text-slate-300 antialiased">
 <main class="mx-auto max-w-7xl px-6 py-10 space-y-10">

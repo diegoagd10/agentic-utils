@@ -54,6 +54,8 @@ Don't assign approaches or ask for diversity: each subagent proposes the approac
 
 The page is one HTML file that grows. The server injects the feedback controls, so write plain markup:
 
+- Write the whole page in the language the user used when invoking this skill: header, part titles, prose, labels, and comments in code. Set `<html lang>` to that language's code; the injected controls follow it (English and Spanish built in; for any other language keep the template's `data-dui-strings` block with every value translated, otherwise delete it). Code identifiers stay as they are in the codebase. Give subagents the language too.
+
 - One `<section data-part="N" data-title="…">` per part. The last section without `data-approved` is the active one.
 - When a part is approved, add `data-approved` to its section, keep only what the user picked, and wrap it in a collapsed `<details>`. Never edit an approved part again.
 - An option row is `<div data-row="<id>" class="grid grid-cols-3 gap-4">` with exactly three `<article data-option="A|B|C" data-approach="<name>">` children. Row ids are unique within the page.

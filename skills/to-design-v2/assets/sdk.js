@@ -2,6 +2,65 @@
 // element/selection notes, a chat box, and the send controls to the
 // active part, then reloads when the agent rewrites the file.
 (() => {
+  const STRINGS = {
+    en: {
+      pick: "Pick this one",
+      picked: "✓ Picked",
+      rowHasNotes: "This row has notes: remove them to pick an option.",
+      pickCleared: "Removed the picked option in that row: pick or comment, not both.",
+      notePlaceholder: "Your note…",
+      queueNote: "Add to queue",
+      cancel: "Cancel",
+      chatPlaceholder: "General comment on this part…",
+      send: "Send feedback",
+      finish: "Approve and write design.md",
+      continue: "Continue",
+      approve: "Approve",
+      part: "part",
+      feedbackQueued: "Feedback is queued: send or remove it to continue.",
+      pickEachRow: "Pick an option in every row or send feedback.",
+      sendFailed: "Could not send ({error}). Your feedback is still queued.",
+      working: "Agent working…",
+      ended: "Session ended.",
+      notListening: "The agent is not listening; your feedback arrives on its next wait.",
+      offline: "No connection to the server.",
+    },
+    es: {
+      pick: "Elegir esta",
+      picked: "✓ Elegida",
+      rowHasNotes: "Esta fila tiene notas: quítalas para elegir una opción.",
+      pickCleared: "Quité la opción elegida de esa fila: o eliges o comentas.",
+      notePlaceholder: "Tu nota…",
+      queueNote: "Añadir a la cola",
+      cancel: "Cancelar",
+      chatPlaceholder: "Comentario general de esta parte…",
+      send: "Enviar feedback",
+      finish: "Aprobar y generar design.md",
+      continue: "Continuar",
+      approve: "Aprobar",
+      part: "parte",
+      feedbackQueued: "Hay feedback en cola: envíalo o quítalo para continuar.",
+      pickEachRow: "Elige una opción en cada fila o envía feedback.",
+      sendFailed: "No se pudo enviar ({error}). Tu feedback sigue en cola.",
+      working: "Agente trabajando…",
+      ended: "Sesión terminada.",
+      notListening: "El agente no está escuchando; tu feedback se entregará en su próximo wait.",
+      offline: "Sin conexión con el servidor.",
+    },
+  };
+  // The page's lang picks the strings; a data-dui-strings JSON block in
+  // the page overrides them for any other language.
+  const lang = document.documentElement.lang.slice(0, 2).toLowerCase();
+  const strings = {
+    ...STRINGS.en,
+    ...STRINGS[lang],
+    ...JSON.parse(
+      document.querySelector("script[data-dui-strings]")?.textContent || "{}",
+    ),
+  };
+  const t = (key, vars = {}) =>
+    strings[key].replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+
   const parts = [...document.querySelectorAll("section[data-part]")];
   const active = parts.filter((p) => !p.hasAttribute("data-approved")).pop();
   const rows = active ? [...active.querySelectorAll("[data-row]")] : [];
@@ -28,7 +87,7 @@
     active.classList.add("dui-active");
 
     for (const option of active.querySelectorAll("[data-option]")) {
-      const pick = el("button", "dui-pick", "Elegir esta");
+      const pick = el("button", "dui-pick", t("pick"));
       pick.type = "button";
       pick.dataset.duiUi = "";
       pick.addEventListener("click", (e) => {
@@ -83,7 +142,7 @@
     const row = option.closest("[data-row]");
     const id = row.dataset.row;
     if (state.notes.some((n) => n.row === id)) {
-      flash("Esta fila tiene notas: quítalas para elegir una opción.");
+      flash(t("rowHasNotes"));
       return;
     }
     const current = state.selections[id];
@@ -110,11 +169,11 @@
     const quote = excerpt ?? describe(element);
     card.append(el("div", "dui-quote", clip(quote, 160)));
     const input = el("textarea", "dui-input");
-    input.placeholder = "Tu nota…";
+    input.placeholder = t("notePlaceholder");
     card.append(input);
     const actions = el("div", "dui-actions");
-    const add = el("button", "dui-btn dui-primary", "Añadir a la cola");
-    const cancel = el("button", "dui-btn", "Cancelar");
+    const add = el("button", "dui-btn dui-primary", t("queueNote"));
+    const cancel = el("button", "dui-btn", t("cancel"));
     actions.append(cancel, add);
     card.append(actions);
 
@@ -139,7 +198,7 @@
       };
       if (note.row && state.selections[note.row]) {
         delete state.selections[note.row];
-        flash("Quité la opción elegida de esa fila: o eliges o comentas.");
+        flash(t("pickCleared"));
       }
       state.notes.push(note);
       save();
@@ -168,15 +227,16 @@
       <div class="dui-status"></div>
       <ul class="dui-queue"></ul>
       <div class="dui-row">
-        <textarea class="dui-input dui-chat"
-          placeholder="Comentario general de esta parte…"></textarea>
+        <textarea class="dui-input dui-chat"></textarea>
         <div class="dui-buttons">
-          <button type="button" class="dui-btn dui-send">Enviar feedback</button>
+          <button type="button" class="dui-btn dui-send"></button>
           <button type="button" class="dui-btn dui-primary dui-go"></button>
         </div>
       </div>`;
     document.body.append(root);
     const chat = root.querySelector(".dui-chat");
+    chat.placeholder = t("chatPlaceholder");
+    root.querySelector(".dui-send").textContent = t("send");
     chat.value = state.message;
     chat.addEventListener("input", () => {
       state.message = chat.value;
@@ -198,7 +258,7 @@
           option.dataset.option === chosen,
         );
         option.querySelector(".dui-pick").textContent =
-          option.dataset.option === chosen ? "✓ Elegida" : "Elegir esta";
+          option.dataset.option === chosen ? t("picked") : t("pick");
       }
     }
 
@@ -208,7 +268,7 @@
         const item = el("li", "dui-note");
         const where = note.row
           ? `${note.row}${note.option ? ` · ${note.option}` : ""}`
-          : "parte";
+          : t("part");
         item.append(
           el("span", "dui-where", where),
           el("span", "", ` “${clip(note.excerpt, 50)}” — ${note.comment}`),
@@ -229,16 +289,16 @@
     const allChosen = rows.every((r) => state.selections[r.dataset.row]);
     const go = bar.querySelector(".dui-go");
     go.textContent = active?.hasAttribute("data-final")
-      ? "Aprobar y generar design.md"
+      ? t("finish")
       : rows.length
-        ? "Continuar"
-        : "Aprobar";
+        ? t("continue")
+        : t("approve");
     go.disabled = !active || working || ended || hasFeedback || !allChosen;
     go.title = hasFeedback
-      ? "Hay feedback en cola: envíalo o quítalo para continuar."
+      ? t("feedbackQueued")
       : allChosen
         ? ""
-        : "Elige una opción en cada fila o envía feedback.";
+        : t("pickEachRow");
     bar.querySelector(".dui-send").disabled =
       !active || working || ended || !hasFeedback;
     bar.querySelector(".dui-chat").disabled = working || ended;
@@ -262,13 +322,13 @@
       });
       if (!res.ok) throw new Error(String(res.status));
     } catch (err) {
-      flash(`No se pudo enviar (${err.message}). Tu feedback sigue en cola.`);
+      flash(t("sendFailed", { error: err.message }));
       return;
     }
     localStorage.removeItem(storeKey);
     sessionStorage.setItem(sentKey, String(version));
     working = true;
-    status("Agente trabajando…");
+    status(t("working"));
     render();
   }
 
@@ -282,21 +342,21 @@
         if (v.mtime !== version) return location.reload();
         if (v.ended) {
           ended = true;
-          status(v.ended.message || "Sesión terminada.");
+          status(v.ended.message || t("ended"));
           render();
           return;
         }
         if (working) {
-          status("Agente trabajando…");
+          status(t("working"));
         } else {
           status(
             v.listening
               ? ""
-              : "El agente no está escuchando; tu feedback se entregará en su próximo wait.",
+              : t("notListening"),
           );
         }
       } catch {
-        if (!ended) status("Sin conexión con el servidor.");
+        if (!ended) status(t("offline"));
       }
       await new Promise((r) => setTimeout(r, 1000));
     }
