@@ -46,22 +46,33 @@ For parts 3–6, launch three subagents in parallel, fresh for every part and ev
 - the goal and scope from Gather, and the Ground notes;
 - everything approved so far: the picked column of each earlier part, and the answers to part 1;
 - for a regeneration, the user's feedback on the previous round;
-- this part's views from [design-format.md](design-format.md), and the **Fragment rules** below.
+- this part's views from [design-format.md](design-format.md), the **Column budget**, and the **Fragment rules** below.
 
 Don't assign approaches or ask for diversity: each subagent proposes the approach it believes in, and agreement between them is a signal the user wants to see. Each subagent may read and explore the code it needs. It returns only its column's inner HTML plus a 2–5 word name for its approach. Put each result into its own `<article data-option>` column, in the order they return.
+
+Before writing the row, edit the three results: move every point all three share into one **Shared by all three** block above the row (plain markup, not an option), so the columns show only how the approaches differ. Then cut anything over the budget.
 
 ## Page contract
 
 The page is one HTML file that grows. The server injects the feedback controls, so write plain markup:
 
 - Write the whole page in the language the user used when invoking this skill: header, part titles, prose, labels, and comments in code. Set `<html lang>` to that language's code; the injected controls follow it (English and Spanish built in; for any other language keep the template's `data-dui-strings` block with every value translated, otherwise delete it). Code identifiers stay as they are in the codebase. Give subagents the language too.
-
 - One `<section data-part="N" data-title="…">` per part. The last section without `data-approved` is the active one.
 - When a part is approved, add `data-approved` to its section, keep only what the user picked, and wrap it in a collapsed `<details>`. Never edit an approved part again.
 - An option row is `<div data-row="<id>" class="grid grid-cols-3 gap-4">` with exactly three `<article data-option="A|B|C" data-approach="<name>">` children. Row ids are unique within the page.
 - Write the whole file each time; the page reloads when the file changes. Follow the scaffold in [assets/template.html](assets/template.html).
 
 **Fragment rules** (also given to subagents): static HTML styled with Tailwind classes only, no `<script>`, `<style>`, or `<iframe>`. The page is dark: use the template's palette (`bg-slate-900` cards, `border-slate-800`, `text-slate-300` body, `text-slate-100` headings, `text-slate-400` labels). A mockup may use its product's own colors inside its own framed box. Code goes in `<pre class="font-mono text-sm overflow-x-auto">` with `<`, `>`, and `&` escaped. Show shape, not bodies, exactly as `design-format.md` describes. Mockups appear only in part 5.
+
+## Column budget
+
+A column is read side by side with two others, so it must be scannable in under a minute. Show the smallest view that makes the approach clear; when in doubt, cut.
+
+- Open with one sentence (≤20 words) saying what this approach does differently. Don't repeat the approach name as a heading; the page shows it.
+- **Part 3:** Desired end state in ≤4 bullets, Patterns in ≤4 bullets (`Follow:`/`Avoid:` <pattern> — `file:line`). Each bullet ≤15 words.
+- **Parts 4–6:** shape only. Each tree ≤20 lines as a `diff`; signatures only, no bodies; at most one line of prose per view.
+- Leave out what doesn't decide between approaches: error-message lists, logging, docs updates, edge-case enumerations. Those belong to implementation.
+- Aim for ~120 words of prose per column.
 
 ## Feedback
 
