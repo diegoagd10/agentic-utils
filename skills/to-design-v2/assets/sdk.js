@@ -370,50 +370,52 @@
     const style = document.createElement("style");
     style.textContent = `
       body { padding-bottom: 14rem; }
-      .dui-hover { outline: 1px dashed #94a3b8; outline-offset: 2px;
+      .dui-hover { outline: 1px dashed #64748b; outline-offset: 2px;
         cursor: text; }
-      .dui-target { outline: 2px solid #6366f1 !important; }
-      .dui-chosen { outline: 3px solid #059669 !important;
+      .dui-target { outline: 2px solid #818cf8 !important; }
+      .dui-chosen { outline: 3px solid #10b981 !important;
         outline-offset: 3px; }
       .dui-pick { font: 600 12px system-ui; padding: 4px 10px;
-        border-radius: 999px; border: 1px solid #cbd5e1; background: #fff;
-        margin-bottom: 8px; cursor: pointer; }
+        border-radius: 999px; border: 1px solid #334155; background: #1e293b;
+        color: #e2e8f0; margin-bottom: 8px; cursor: pointer; }
       .dui-chosen .dui-pick { background: #059669; color: #fff;
-        border-color: #059669; }
+        border-color: #10b981; }
       .dui-approach { font: 600 11px system-ui; text-transform: uppercase;
-        letter-spacing: .06em; color: #64748b; margin-bottom: 8px; }
+        letter-spacing: .06em; color: #94a3b8; margin-bottom: 8px; }
       .dui-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-        background: #fff; border-top: 1px solid #e2e8f0; padding: 10px 16px;
-        font: 14px system-ui; box-shadow: 0 -4px 16px rgba(0,0,0,.05); }
+        background: #0f172a; border-top: 1px solid #1e293b; padding: 10px 16px;
+        color: #cbd5e1; font: 14px system-ui;
+        box-shadow: 0 -4px 16px rgba(0,0,0,.4); }
       .dui-bar.dui-busy { opacity: .7; }
-      .dui-status { color: #b45309; font-weight: 600; margin-bottom: 6px; }
+      .dui-status { color: #fbbf24; font-weight: 600; margin-bottom: 6px; }
       .dui-queue { list-style: none; margin: 0 0 6px; padding: 0;
         max-height: 7rem; overflow: auto; }
       .dui-note { display: flex; gap: 6px; align-items: baseline;
-        padding: 2px 0; color: #334155; }
-      .dui-where { font: 600 11px ui-monospace, monospace; color: #6366f1; }
+        padding: 2px 0; color: #cbd5e1; }
+      .dui-where { font: 600 11px ui-monospace, monospace; color: #a5b4fc; }
       .dui-x { margin-left: auto; border: 0; background: none;
-        cursor: pointer; color: #94a3b8; font-size: 16px; }
+        cursor: pointer; color: #64748b; font-size: 16px; }
       .dui-row { display: flex; gap: 10px; align-items: stretch; }
       .dui-input { flex: 1; min-height: 3rem; font: 14px system-ui;
-        padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px;
+        padding: 6px 8px; border: 1px solid #334155; border-radius: 6px;
+        background: #020617; color: #e2e8f0;
         resize: vertical; width: 100%; box-sizing: border-box; }
       .dui-buttons { display: flex; flex-direction: column; gap: 6px; }
       .dui-btn { font: 600 13px system-ui; padding: 6px 14px;
-        border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;
-        cursor: pointer; }
+        border-radius: 6px; border: 1px solid #334155; background: #1e293b;
+        color: #e2e8f0; cursor: pointer; }
       .dui-btn:disabled { opacity: .45; cursor: not-allowed; }
-      .dui-primary { background: #0f172a; color: #fff; border-color: #0f172a; }
+      .dui-primary { background: #e2e8f0; color: #0f172a; border-color: #e2e8f0; }
       .dui-card { position: absolute; z-index: 60; width: 340px;
-        background: #fff; border: 1px solid #cbd5e1; border-radius: 8px;
-        padding: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
-        font: 14px system-ui; }
-      .dui-quote { color: #64748b; font-size: 12px; margin-bottom: 6px;
-        border-left: 3px solid #cbd5e1; padding-left: 6px; }
+        background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+        padding: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+        color: #e2e8f0; font: 14px system-ui; }
+      .dui-quote { color: #94a3b8; font-size: 12px; margin-bottom: 6px;
+        border-left: 3px solid #334155; padding-left: 6px; }
       .dui-actions { display: flex; justify-content: flex-end; gap: 6px;
         margin-top: 6px; }
       .dui-toast { position: fixed; top: 16px; left: 50%; z-index: 70;
-        transform: translateX(-50%); background: #0f172a; color: #fff;
+        transform: translateX(-50%); background: #e2e8f0; color: #0f172a;
         padding: 8px 14px; border-radius: 6px; font: 13px system-ui; }`;
     document.head.append(style);
   }

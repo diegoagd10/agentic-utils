@@ -59,7 +59,7 @@ The page is one HTML file that grows. The server injects the feedback controls, 
 - An option row is `<div data-row="<id>" class="grid grid-cols-3 gap-4">` with exactly three `<article data-option="A|B|C" data-approach="<name>">` children. Row ids are unique within the page.
 - Write the whole file each time; the page reloads when the file changes. Follow the scaffold in [assets/template.html](assets/template.html).
 
-**Fragment rules** (also given to subagents): static HTML styled with Tailwind classes only, no `<script>`, `<style>`, or `<iframe>`. Code goes in `<pre class="font-mono text-sm overflow-x-auto">` with `<`, `>`, and `&` escaped. Show shape, not bodies, exactly as `design-format.md` describes. Mockups appear only in part 5.
+**Fragment rules** (also given to subagents): static HTML styled with Tailwind classes only, no `<script>`, `<style>`, or `<iframe>`. The page is dark: use the template's palette (`bg-slate-900` cards, `border-slate-800`, `text-slate-300` body, `text-slate-100` headings, `text-slate-400` labels). A mockup may use its product's own colors inside its own framed box. Code goes in `<pre class="font-mono text-sm overflow-x-auto">` with `<`, `>`, and `&` escaped. Show shape, not bodies, exactly as `design-format.md` describes. Mockups appear only in part 5.
 
 ## Feedback
 
