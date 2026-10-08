@@ -29,19 +29,20 @@ Never write `design.md` before part 7 is approved.
 | - | --- | --- | --- |
 | 1 | Open questions | you | one row per question, three answer columns |
 | 2 | Summary + Current state | you | no options: approve or feedback |
-| 3 | Desired end state + Patterns | 3 subagents | one row, three approaches |
+| 3 | Desired end state + Patterns | you | no options: approve or feedback |
 | 4 | File tree + Call tree | 3 subagents | one row, three approaches |
 | 5 | Component tree, mockup above it | 3 subagents | one row, three approaches |
 | 6 | Public signatures | 3 subagents | one row, three approaches |
 | 7 | Decisions + Not doing | you | no options: approve or feedback |
 
-- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`. Mark your recommendation with a visible "Recommended" badge in its column. Skip questions the source already settles, and skip the part when none remain.
+- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`, one or two sentences each. Mark your recommendation with a visible "Recommended" badge in its column. Skip questions the source already settles, and skip the part when none remain.
+- **Part 3** comes from the spec and the Ground notes, which don't change between approaches, so you write it once at `/to-design` size: Desired end state in ≤6 bullets, Patterns in ≤6 (`Follow:`/`Avoid:` <pattern> — `file:line`), one line each. Name verification by command or test file only; leave the per-test list to implementation.
 - **Part 5** exists only when the change touches UI; otherwise skip it and keep the numbering. Each column shows a static mockup of the screen above the component tree that builds it.
 - **Part 7** derives Decisions from the user's picks: each picked column is a Settled decision, and the columns not picked are its `Rejected:` alternatives. Not doing comes from the spec and the answers. Mark this section `data-final`.
 
 ## Subagents
 
-For parts 3–6, launch three subagents in parallel, fresh for every part and every regeneration. Give each:
+For parts 4–6, launch three subagents in parallel, fresh for every part and every regeneration. Give each:
 
 - the goal and scope from Gather, and the Ground notes;
 - everything approved so far: the picked column of each earlier part, and the answers to part 1;
@@ -69,8 +70,7 @@ The page is one HTML file that grows. The server injects the feedback controls, 
 A column is read side by side with two others, so it must be scannable in under a minute. Show the smallest view that makes the approach clear; when in doubt, cut.
 
 - Open with one sentence (≤20 words) saying what this approach does differently. Don't repeat the approach name as a heading; the page shows it.
-- **Part 3:** Desired end state in ≤4 bullets, Patterns in ≤4 bullets (`Follow:`/`Avoid:` <pattern> — `file:line`). Each bullet ≤15 words.
-- **Parts 4–6:** shape only. Each tree ≤20 lines as a `diff`; signatures only, no bodies; at most one line of prose per view.
+- Shape only. Each tree ≤20 lines as a `diff`; signatures only, no bodies; at most one line of prose per view.
 - Leave out what doesn't decide between approaches: error-message lists, logging, docs updates, edge-case enumerations. Those belong to implementation.
 - Aim for ~120 words of prose per column.
 
