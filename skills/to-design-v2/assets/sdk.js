@@ -76,6 +76,7 @@
   let selecting = false;
 
   injectStyles();
+  colorDiffs();
   const bar = buildBar();
   if (active) wireActivePart();
   render();
@@ -378,6 +379,25 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
+  // Trees are written as diffs: color + and - lines like a diff viewer.
+  function colorDiffs() {
+    for (const pre of document.querySelectorAll("pre")) {
+      if (pre.children.length) continue;
+      const lines = pre.textContent.split("\n");
+      if (!lines.some((l) => /^[+-](\s|$)/.test(l))) continue;
+      pre.textContent = "";
+      lines.forEach((line, i) => {
+        if (i) pre.append("\n");
+        const kind = /^\+(\s|$)/.test(line)
+          ? "dui-add"
+          : /^-(\s|$)/.test(line)
+            ? "dui-del"
+            : null;
+        pre.append(kind ? el("span", kind, line) : line);
+      });
+    }
+  }
+
   function ui(node) {
     return node instanceof Element && node.closest("[data-dui-ui]");
   }
@@ -430,6 +450,8 @@
     const style = document.createElement("style");
     style.textContent = `
       body { padding-bottom: 14rem; }
+      .dui-add { color: #86efac; background: rgba(34,197,94,.12); }
+      .dui-del { color: #fca5a5; background: rgba(239,68,68,.12); }
       .dui-hover { outline: 1px dashed #64748b; outline-offset: 2px;
         cursor: text; }
       .dui-target { outline: 2px solid #818cf8 !important; }

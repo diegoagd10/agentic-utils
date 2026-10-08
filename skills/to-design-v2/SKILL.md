@@ -70,7 +70,7 @@ The page is one HTML file that grows. The server injects the feedback controls, 
 A column is read side by side with two others, so it must be scannable in under a minute. Show the smallest view that makes the approach clear; when in doubt, cut.
 
 - Open with one sentence (≤20 words) saying what this approach does differently. Don't repeat the approach name as a heading; the page shows it.
-- Shape only. Each tree ≤20 lines as a `diff`; signatures only, no bodies; at most one line of prose per view.
+- Shape only. Each tree ≤20 lines as a `diff`, added lines starting with `+ ` and removed ones with `- ` (the page colors them), lines ≤45 characters so they fit a column without scrolling; signatures only, no bodies; at most one line of prose per view.
 - Leave out what doesn't decide between approaches: error-message lists, logging, docs updates, edge-case enumerations. Those belong to implementation.
 - Aim for ~120 words of prose per column.
 
