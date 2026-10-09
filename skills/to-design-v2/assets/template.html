@@ -13,6 +13,7 @@
   {
     "pick": "Pick this one",
     "picked": "✓ Picked",
+    "ownAnswer": "Or write your own answer…",
     "rowHasNotes": "This row has notes: remove them to pick an option.",
     "pickCleared": "Removed the picked option in that row: pick or comment, not both.",
     "notePlaceholder": "Your note…",
@@ -65,7 +66,9 @@
   <!--
     Active part with options: one row, three columns. Each column is one
     subagent's whole approach, with the part's views stacked inside it.
-    Part 1 uses one row per question instead.
+    Part 1 uses one row per question instead, each marked
+    data-own-answer so the user can also type an answer of their own:
+    <div data-row="q1" data-own-answer class="grid grid-cols-3 gap-4 items-start">
   -->
   <section data-part="4" data-title="File tree + Call tree" class="space-y-6">
     <h2 class="font-serif text-2xl text-slate-100">4 · File tree + Call tree</h2>

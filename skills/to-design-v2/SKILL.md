@@ -35,10 +35,10 @@ Never write `design.md` before part 7 is approved.
 | 6 | Public signatures | 3 subagents | one row, three approaches |
 | 7 | Decisions + Not doing | you | no options: approve or feedback |
 
-- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`, one or two sentences each. Mark your recommendation with a visible "Recommended" badge in its column. Skip questions the source already settles, and skip the part when none remain.
+- **Part 1** holds the 3–5 questions that need human judgment, each with three concrete answers grounded in `file:line`, one or two sentences each. Mark your recommendation with a visible "Recommended" badge in its column. Mark each row `data-own-answer` so the user can type an **own answer** instead of picking a column. Skip questions the source already settles, and skip the part when none remain.
 - **Part 3** comes from the spec and the Ground notes, which don't change between approaches, so you write it once at `/to-design` size: Desired end state in ≤6 bullets, Patterns in ≤6 (`Follow:`/`Avoid:` <pattern> — `file:line`), one line each. Name verification by command or test file only; leave the per-test list to implementation.
 - **Part 5** exists only when the change touches UI; otherwise skip it and keep the numbering. Each column shows a static mockup of the screen above the component tree that builds it.
-- **Part 7** derives Decisions from the user's picks: each picked column is a Settled decision, and the columns not picked are its `Rejected:` alternatives. Not doing comes from the spec and the answers. Mark this section `data-final`.
+- **Part 7** derives Decisions from the user's picks: each picked column is a Settled decision, and the columns not picked are its `Rejected:` alternatives. An own answer is a Settled decision with all three columns rejected. Not doing comes from the spec and the answers. Mark this section `data-final`.
 
 ## Subagents
 
@@ -80,15 +80,16 @@ A column is read side by side with two others, so it must be scannable in under 
 
 ```json
 { "status": "feedback", "action": "continue", "part": "4",
-  "selections": { "approach": { "option": "B", "approach": "…" } },
+  "selections": { "approach": { "option": "B", "approach": "…" },
+                  "q2": { "option": "own", "answer": "…" } },
   "notes": [ { "row": "approach", "option": "A", "target": "pre",
                "selector": "…", "excerpt": "…", "comment": "…" } ],
   "message": "general comment" }
 ```
 
-- `continue` (option parts) or `approve` (no-option parts): the user accepted the part as shown. Mark it approved and write the next part.
+- `continue` (option parts) or `approve` (no-option parts): the user accepted the part as shown. Mark it approved and write the next part. A selection with `"option": "own"` is the user's own answer to that row: the approved section shows their `answer` text in place of a column.
 - `feedback`: rework the current part and wait again; don't advance. In an option part, keep the rows the user picked and regenerate all three columns of every other row. In a no-option part, rewrite the part itself.
-- The user either picks or comments on a row, never both.
+- The user either picks (a column or an own answer) or comments on a row, never both.
 - `timeout`: run `wait` again.
 - `ended` or `no_server`: stop and ask the user in chat whether to reopen.
 

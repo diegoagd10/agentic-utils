@@ -35,7 +35,7 @@ What is true when this ships, and how a reviewer can verify it.
 
 ## Decisions
 
-Number decisions `D-01`, `D-02`, … in this document's own sequence; cite spec decisions as "spec D-06". Every option the user picked in the review page becomes a Settled decision; the columns they did not pick become its `Rejected:` alternatives. Record design choices only, not actions taken such as edits to the spec. Write neutrally: attribute a user's choice as "(user, <date>)", never "you" or "your answer".
+Number decisions `D-01`, `D-02`, … in this document's own sequence; cite spec decisions as "spec D-06". Every option the user picked in the review page becomes a Settled decision; the columns they did not pick become its `Rejected:` alternatives. An own answer typed in the page is a Settled decision too, with all three columns rejected. Record design choices only, not actions taken such as edits to the spec. Write neutrally: attribute a user's choice as "(user, <date>)", never "you" or "your answer".
 
 ## Readability
 

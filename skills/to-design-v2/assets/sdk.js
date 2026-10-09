@@ -1,11 +1,12 @@
 // Injected by design-ui into the review page. Adds option picking,
-// element/selection notes, a chat box, and the send controls to the
+// own answers, element/selection notes, a chat box, and the send controls to the
 // active part, then reloads when the agent rewrites the file.
 (() => {
   const STRINGS = {
     en: {
       pick: "Pick this one",
       picked: "✓ Picked",
+      ownAnswer: "Or write your own answer…",
       rowHasNotes: "This row has notes: remove them to pick an option.",
       pickCleared: "Removed the picked option in that row: pick or comment, not both.",
       notePlaceholder: "Your note…",
@@ -28,6 +29,7 @@
     es: {
       pick: "Elegir esta",
       picked: "✓ Elegida",
+      ownAnswer: "O escribe tu propia respuesta…",
       rowHasNotes: "Esta fila tiene notas: quítalas para elegir una opción.",
       pickCleared: "Quité la opción elegida de esa fila: o eliges o comentas.",
       notePlaceholder: "Tu nota…",
@@ -104,6 +106,17 @@
       }
     }
 
+    // Rows marked data-own-answer also take a typed answer of the
+    // user's own, sent as the row's selection with option "own".
+    for (const row of active.querySelectorAll("[data-row][data-own-answer]")) {
+      const own = el("textarea", "dui-input dui-own");
+      own.placeholder = t("ownAnswer");
+      own.dataset.duiUi = "";
+      own.dataset.ownFor = row.dataset.row;
+      own.addEventListener("input", () => answer(row, own));
+      row.after(own);
+    }
+
     // Notes on any element of the active part, mockups included.
     let hovered = null;
     active.addEventListener("mouseover", (e) => {
@@ -154,6 +167,23 @@
         option: option.dataset.option,
         approach: option.dataset.approach ?? "",
       };
+    }
+    save();
+    render();
+  }
+
+  function answer(row, own) {
+    const id = row.dataset.row;
+    if (state.notes.some((n) => n.row === id)) {
+      own.value = "";
+      flash(t("rowHasNotes"));
+      return;
+    }
+    const text = own.value.trim();
+    if (text) {
+      state.selections[id] = { option: "own", answer: text };
+    } else if (state.selections[id]?.option === "own") {
+      delete state.selections[id];
     }
     save();
     render();
@@ -261,6 +291,14 @@
         option.querySelector(".dui-pick").textContent =
           option.dataset.option === chosen ? t("picked") : t("pick");
       }
+    }
+    for (const own of document.querySelectorAll(".dui-own")) {
+      const selection = state.selections[own.dataset.ownFor];
+      const text = selection?.option === "own" ? selection.answer : "";
+      // Leave what is being typed alone, trailing spaces included.
+      if (own.value.trim() !== text) own.value = text;
+      own.classList.toggle("dui-chosen", Boolean(text));
+      own.disabled = working || ended;
     }
 
     const queue = bar.querySelector(".dui-queue");
@@ -462,6 +500,8 @@
         color: #e2e8f0; margin-bottom: 8px; cursor: pointer; }
       .dui-chosen .dui-pick { background: #059669; color: #fff;
         border-color: #10b981; }
+      .dui-input.dui-own { display: block; min-height: 2.5rem; margin-top: 12px; }
+      .dui-own.dui-chosen { outline-offset: 0; }
       .dui-approach { font: 600 11px system-ui; text-transform: uppercase;
         letter-spacing: .06em; color: #94a3b8; margin-bottom: 8px; }
       .dui-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
