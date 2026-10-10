@@ -64,22 +64,23 @@
   -->
 
   <!--
-    Active part with options: one row, three columns. Each column is one
-    subagent's whole approach, with the part's views stacked inside it.
+    Active part with options: one row, three full-width options stacked
+    vertically. Each option is one subagent's whole approach, with the
+    part's views stacked inside it.
     Part 1 uses one row per question instead, each marked
     data-own-answer so the user can also type an answer of their own:
-    <div data-row="q1" data-own-answer class="grid grid-cols-3 gap-4 items-start">
+    <div data-row="q1" data-own-answer class="space-y-4">
   -->
   <section data-part="4" data-title="File tree + Call tree" class="space-y-6">
     <h2 class="font-serif text-2xl text-slate-100">4 · File tree + Call tree</h2>
 
-    <!-- Points all three columns share, written once. Not an option. -->
+    <!-- Points all three options share, written once. Not an option. -->
     <div class="rounded-lg border border-dashed border-slate-700 p-4 text-sm">
       <h3 class="text-xs uppercase tracking-wider text-slate-400">Shared by all three</h3>
       <ul class="list-disc pl-5">...</ul>
     </div>
 
-    <div data-row="approach" class="grid grid-cols-3 gap-4 items-start">
+    <div data-row="approach" class="space-y-4">
       <article data-option="A" data-approach="APPROACH A"
         class="rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-4">
         <div>
