@@ -3,6 +3,8 @@
 //
 //   design-ui open  <design.html>               start server, open browser
 //   design-ui wait  <design.html> [--timeout s] block until the user sends
+//   design-ui reply <design.html> --thread t2 [--status s] [--message m]
+//                                               answer a comment thread
 //   design-ui close <design.html> [--message m] end the session
 //   design-ui serve <design.html>               the server itself (internal)
 
@@ -27,6 +29,9 @@ if (!command || !target) {
 }
 
 const file = path.resolve(target);
+// Comment threads live beside the page, so they survive every rewrite.
+const threadsFile = file.replace(/\.html?$/i, "") + ".threads.json";
+const STATUSES = ["open", "answered", "done", "declined"];
 const sessionFile = path.join(
   SESSIONS_DIR,
   createHash("sha1").update(file).digest("hex").slice(0, 12) + ".json",
@@ -38,6 +43,9 @@ switch (command) {
     break;
   case "wait":
     await wait();
+    break;
+  case "reply":
+    await reply();
     break;
   case "close":
     await close();
@@ -93,6 +101,32 @@ async function wait() {
       body: JSON.stringify({ id }),
     });
   }
+}
+
+async function reply() {
+  const thread = flag("--thread");
+  const status = flag("--status");
+  const message = flag("--message") ?? "";
+  if (!thread || !(message || status)) {
+    fail("usage: design-ui reply <design.html> --thread <id> " +
+      "[--status open|answered|done|declined] [--message <text>]");
+  }
+  if (status && !STATUSES.includes(status)) fail(`unknown status: ${status}`);
+  const server = await findServer();
+  if (!server) {
+    print({ status: "no_server", next: "run `design-ui open` again" });
+    process.exit(1);
+  }
+  const res = await fetch(`${server.url}/__reply`, {
+    method: "POST",
+    body: JSON.stringify({ thread, status, message }),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    print({ status: "error", ...body });
+    process.exit(1);
+  }
+  print({ status: "replied", thread, threadStatus: body.thread.status });
 }
 
 async function close() {
@@ -171,6 +205,10 @@ function serve() {
   let inflight = null;
   let nextId = 1;
   let ended = null;
+  // From a send until the agent waits again with nothing left to deliver.
+  let busy = false;
+  const store = loadThreads();
+  let threadsRev = 0;
   // Only the agent and sent feedback count: an open tab alone polls forever.
   let lastActive = Date.now();
 
@@ -189,15 +227,39 @@ function serve() {
         file,
         mtime: mtime(),
         listening: waiters.size > 0,
+        busy,
+        threadsRev,
         ended,
       });
+    }
+    if (req.method === "GET" && url.pathname === "/__threads") {
+      return json(res, { threads: store.threads, threadsRev });
     }
     if (req.method === "POST" && url.pathname === "/__feedback") {
       if (ended) return json(res, { error: "session ended" }, 409);
       lastActive = Date.now();
-      queue.push({ id: nextId++, ...(await readJson(req)) });
+      const { threads = [], followUps = [], ...rest } = await readJson(req);
+      const touched = [
+        ...threads.map((t) => openThread(rest.part, t)),
+        ...followUps.map(followUp).filter(Boolean),
+      ];
+      if (touched.length) saveThreads();
+      queue.push({ id: nextId++, ...rest, threads: touched.map(forAgent) });
+      busy = true;
       flush();
-      return json(res, { ok: true });
+      return json(res, { ok: true, threads: store.threads, threadsRev });
+    }
+    if (req.method === "POST" && url.pathname === "/__reply") {
+      const { thread: id, status, message } = await readJson(req);
+      const thread = store.threads.find((t) => t.id === id);
+      if (!thread) return json(res, { error: `no thread ${id}` }, 404);
+      if (message) {
+        thread.messages.push({ from: "agent", text: message, at: Date.now() });
+      }
+      thread.status =
+        status ?? (thread.kind === "question" ? "answered" : "done");
+      saveThreads();
+      return json(res, { ok: true, thread });
     }
     if (req.method === "GET" && url.pathname === "/__wait") {
       lastActive = Date.now();
@@ -211,6 +273,7 @@ function serve() {
     }
     if (req.method === "POST" && url.pathname === "/__end") {
       ended = { message: (await readJson(req)).message ?? "" };
+      busy = false;
       for (const w of waiters) w.done({ status: "ended" });
       // Give open tabs a few polls to see the end before exiting.
       setTimeout(shutdown, 5000);
@@ -221,6 +284,7 @@ function serve() {
 
   function hold(res, waitMs) {
     if (inflight || queue.length) return json(res, deliver());
+    busy = false;
     const waiter = {
       done(body) {
         clearTimeout(waiter.timer);
@@ -245,14 +309,67 @@ function serve() {
   }
 
   function deliver() {
+    busy = true;
     inflight ??= queue.shift();
     return { status: "feedback", ...inflight };
   }
 
+  function openThread(part, t) {
+    const thread = {
+      id: `t${store.nextId++}`,
+      part,
+      kind: t.kind === "question" ? "question" : "change",
+      status: "open",
+      row: t.row ?? null,
+      option: t.option ?? null,
+      target: t.target ?? "part",
+      selector: t.selector ?? "",
+      excerpt: t.excerpt ?? "",
+      messages: [{ from: "user", text: String(t.comment), at: Date.now() }],
+    };
+    store.threads.push(thread);
+    return thread;
+  }
+
+  function followUp({ thread: id, comment }) {
+    const thread = store.threads.find((t) => t.id === id);
+    if (!thread || !comment) return null;
+    thread.messages.push({ from: "user", text: comment, at: Date.now() });
+    thread.status = "open";
+    return thread;
+  }
+
+  function forAgent({ part, messages, ...thread }) {
+    return {
+      ...thread,
+      messages: messages.map(({ from, text }) => ({ from, text })),
+    };
+  }
+
+  function loadThreads() {
+    try {
+      return JSON.parse(fs.readFileSync(threadsFile, "utf8"));
+    } catch {
+      return { nextId: 1, threads: [] };
+    }
+  }
+
+  function saveThreads() {
+    threadsRev++;
+    fs.writeFileSync(threadsFile, JSON.stringify(store, null, 2));
+  }
+
   function page() {
     const html = fs.readFileSync(file, "utf8");
+    // `<` escaped so a comment cannot close the script tag.
+    const boot = JSON.stringify({
+      mtime: mtime(),
+      busy,
+      threadsRev,
+      threads: store.threads,
+    }).replace(/</g, "\\u003c");
     const tag =
-      `<script>window.__DUI_MTIME__ = ${mtime()};</script>\n` +
+      `<script>window.__DUI__ = ${boot};</script>\n` +
       '<script src="/__sdk.js" defer></script>';
     return html.includes("</body>")
       ? html.replace("</body>", `${tag}\n</body>`)

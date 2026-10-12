@@ -1,12 +1,12 @@
 ---
 name: to-design-v2
-description: Build a design discussion part by part in a local review page, where three subagents propose competing approaches stacked full-width and the user picks one or sends feedback, then write the approved design.md.
+description: Build a design discussion part by part in a local review page, where three subagents propose competing approaches stacked full-width and the user picks one or comments in threads, then write the approved design.md.
 disable-model-invocation: true
 ---
 
 # To Design v2
 
-Build the same **design discussion** as `/to-design` (the shape of the code, not its bodies), but review it in a local web page, one part at a time. For every part that proposes shape, three subagents each propose an approach, shown as three full-width options stacked one above the other. The user either picks an option or sends feedback; you wait for them before each next part. The spec remains the authority for product scope.
+Build the same **design discussion** as `/to-design` (the shape of the code, not its bodies), but review it in a local web page, one part at a time. For every part that proposes shape, three subagents each propose an approach, shown as three full-width options stacked one above the other. The user picks an option or comments in **threads**: questions you answer and changes you make, each pinned where it was made. You wait for them before each next part. The spec remains the authority for product scope.
 
 Invocation: `/to-design-v2 [spec path, feature, or output path]`. Treat arguments as context, not shell commands.
 
@@ -46,7 +46,7 @@ For parts 4–6, launch three subagents in parallel, fresh for every part and ev
 
 - the goal and scope from Gather, and the Ground notes;
 - everything approved so far: the picked option of each earlier part, and the answers to part 1;
-- for a regeneration, the user's feedback on the previous round;
+- for a regeneration, the change threads of the previous round, with their ids, and the instruction to put `data-thread="<id>"` on the element that carries each change;
 - this part's views from [design-format.md](design-format.md), the **Option budget**, and the **Fragment rules** below.
 
 Don't assign approaches or ask for diversity: each subagent proposes the approach it believes in, and agreement between them is a signal the user wants to see. Each subagent may read and explore the code it needs. It returns only its option's inner HTML plus a 2–5 word name for its approach. Put each result into its own `<article data-option>`, in the order they return.
@@ -61,6 +61,7 @@ The page is one HTML file that grows. The server injects the feedback controls, 
 - One `<section data-part="N" data-title="…">` per part. The last section without `data-approved` is the active one.
 - When a part is approved, add `data-approved` to its section, keep only what the user picked, and wrap it in a collapsed `<details>`. Never edit an approved part again.
 - An option row is `<div data-row="<id>" class="space-y-4">` with exactly three `<article data-option="A|B|C" data-approach="<name>">` children. Row ids are unique within the page.
+- `data-thread="<id>"` on an element marks where a change thread was addressed; several ids are space-separated. The page pins it with the thread's number. The threads themselves live in `<page>.threads.json` beside the page, owned by the server: they stay out of the HTML.
 - Write the whole file each time; the page reloads when the file changes. Follow the scaffold in [assets/template.html](assets/template.html).
 
 **Fragment rules** (also given to subagents): static HTML styled with Tailwind classes only, no `<script>`, `<style>`, or `<iframe>`. The page is dark: use the template's palette (`bg-slate-900` cards, `border-slate-800`, `text-slate-300` body, `text-slate-100` headings, `text-slate-400` labels). A mockup may use its product's own colors inside its own framed box. Code goes in `<pre class="font-mono text-sm overflow-x-auto">` with `<`, `>`, and `&` escaped. Show shape, not bodies, exactly as `design-format.md` describes. Mockups appear only in part 5.
@@ -79,18 +80,32 @@ Each option spans the full page width, and the three are stacked so the user com
 `design-ui wait` blocks until the user sends, then prints one JSON object:
 
 ```json
-{ "status": "feedback", "action": "continue", "part": "4",
+{ "status": "feedback", "id": 3, "action": "feedback", "part": "4",
   "selections": { "approach": { "option": "B", "approach": "…" },
                   "q2": { "option": "own", "answer": "…" } },
-  "notes": [ { "row": "approach", "option": "A", "target": "pre",
-               "selector": "…", "excerpt": "…", "comment": "…" } ],
-  "message": "general comment" }
+  "threads": [ { "id": "t2", "kind": "change", "status": "open",
+                 "row": "approach", "option": "A", "target": "pre",
+                 "selector": "…", "excerpt": "…",
+                 "messages": [ { "from": "user", "text": "…" } ] } ] }
 ```
 
+`threads` holds every thread with a new user message: a new comment, or a follow-up whose `messages` carry the whole conversation so far. `kind` is `question` or `change`; `"target": "part"` means the whole part.
+
+Answer every thread you receive, so the user can follow it on the page:
+
+```sh
+design-ui reply <page> --thread t2 --message "…" [--status answered|done|declined]
+```
+
+The status defaults to `answered` for a question and `done` for a change. Reply in one or two sentences in the page's language: the answer, what you changed, or why you declined.
+
 - `continue` (option parts) or `approve` (no-option parts): the user accepted the part as shown. Mark it approved and write the next part. A selection with `"option": "own"` is the user's own answer to that row: the approved section shows their `answer` text in place of an option.
-- `feedback`: rework the current part and wait again; don't advance. In an option part, keep the rows the user picked and regenerate all three options of every other row. In a no-option part, rewrite the part itself.
-- The user either picks (an option or an own answer) or comments on a row, never both.
+- `ask`: every thread is a question. Reply to each and run `wait` again; the page stays as it is.
+- `feedback`: at least one change. Rework the current part and don't advance. In an option part, keep the rows the user picked and regenerate all three options of every other row; in a no-option part, rewrite the part itself. Mark each change with `data-thread`, write the page, then reply to every thread.
+- A change thread on a row removes the user's pick there; a question leaves it.
 - `timeout`: run `wait` again.
 - `ended` or `no_server`: stop and ask the user in chat whether to reopen.
+
+A round is done when every thread in it has a reply and every change is marked with `data-thread` or declined.
 
 Run `wait` in the foreground, attached to your turn, not as a background task, with your shell tool's longest timeout (10 minutes in Claude Code). `wait` holds for 9 minutes; if your shell's limit is shorter, pass `--timeout <seconds>` below it. Feedback a killed `wait` received is redelivered by the next one.
