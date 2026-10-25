@@ -1,0 +1,91 @@
+---
+name: to-story
+description: Turn a feature or a bug found by hand into a user story with Given/When/Then acceptance criteria, agreed with you before any test or code.
+disable-model-invocation: true
+---
+
+# To story
+
+The user builds features test-first, and the **story** is the contract: a user story that says who wants what and why, followed by acceptance criteria that pin down the behaviour. The failing tests are written from the criteria, and the production code from the tests. The story lives only in the conversation until the user approves it. This phase is design work with the user, so it ends on the user's word, never on yours.
+
+Invocation: `/to-story [feature, use case, or bug]`. Treat arguments as the feature description, not shell commands.
+
+**Language:** write the story itself in English: the user story, titles, section names, scenarios, UI texts and markers. Write everything around it in the language the user writes in: questions, explanations, interpretations.
+
+## Steps
+
+### 1. Read the code
+
+Read what already exists for this area: the closest similar flow (login when building registration, for example), shared schemas and constants, the routing and guard layer, and the test suites the criteria will become. The criteria reuse their names, messages and limits.
+
+Done when you can say in one line what exists today (e.g. "the home page renders nothing and the only table is `users`"), and you open your first message with that line.
+
+### 2. Ask the questions
+
+Ask what you cannot decide from the code: who it is for and why, what the thing *is*, what is shown, which rules apply, time zone and ordering, what happens when it fails or is empty, which test levels. Number every question and attach your recommendation, so the user can answer tersely by number ("1. yes 2. browser 3. yes"). Ask for a mockup or screenshot when the feature has UI; an image the user sends settles most questions, so re-read it before asking more.
+
+If the user's first message already settles enough, you can skip straight to the draft. In that case put the questions at the end of the draft.
+
+### 3. Draft the story
+
+Write the user story and the Given/When/Then criteria from the first draft. Shape:
+
+- **Feature** title, then the **User story**, in a code block:
+
+  ```
+  As a person trying to log my calories
+  I want to enter the website and register my calories
+  So that I can keep track of them.
+  ```
+
+  *As a* names the person in their role (not "the user" or "the system"). *I want* names the capability in the person's words, with no UI or technical detail. *So that* names the real benefit, not a restatement of the want. One story per feature. When the want needs two "and"s, it is probably two stories: ask which one to do first.
+- **Acceptance criteria**: everything below the story makes it checkable. Every scenario serves the story, and the story's want is covered by at least one scenario.
+- **Out of scope**: what is explicitly not built now (buttons that stay disabled, navigation that is only decoration).
+- **Background** with the shared Givens: who is logged in, time zone, today's date, default data.
+- Scenarios grouped by area (redirects, form, API, after submit, seed, environments…), each with an **ID** (`A1`, `B4`, `C6`) so the user can answer by ID. Sub-IDs (`B4a`, `B4b`) split one rule into typing vs. pasting and similar.
+- **Concrete values**: exact UI texts, status codes, limits, sample inputs and their results (`Ana_1 é-ñ!2` → `Ana12`), exact timestamps for day boundaries.
+- Gherkin code blocks or bold bullets both work; stay with one style per feature.
+- Mark what the user has not decided yet: *(assumed)* for a recommendation you applied, **(proposed)** for a scenario the user did not ask for.
+- End with the open decisions: numbered, each with your recommendation and what changes if the user picks otherwise.
+
+Before sending, run the sweep below over the whole draft.
+
+### 4. Iterate
+
+Apply each round of answers, then send:
+
+1. What changed, with the markers *(changed)*, *(new)* and *(extended)*.
+2. **How I read your answers**: every terse or ambiguous answer turned into a precise rule ("letters and numbers" → ASCII `a-z A-Z 0-9`, no accents). When an answer could mean two things, ask again and give your recommendation and the reason ("should the seed accept `ana_1`? I recommend no: that user could never type their name into the login").
+3. **Unchanged**: existing behaviour the new rules deliberately leave alone.
+4. The **full consolidated story**: the user story and every scenario, so the user can approve it in one read. When an answer changes who the feature is for or why, rewrite the user story too.
+5. The remaining questions, or a plain ask for approval when none are left.
+
+A general "looks good" approves the scenarios as written. Say that you read it that way, and drop the **(proposed)** marks.
+
+### 5. Wait for the go
+
+The phase ends when the user explicitly tells you to write the tests. Until then, read files and talk. Write nothing to the repo.
+
+An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Twice the user had to stop work on tests that started right after such an answer. After the last answer, send the full story again and ask for approval.
+
+Once the user gives the go, the next phase is failing tests only: run them, show they fail for the expected reason, and write no production code.
+
+## The sweep
+
+These are cases the user has added after reading drafts. Check every one against the draft. Each one either becomes a scenario or goes to **Out of scope** or **Unchanged** on purpose.
+
+- **Scope of guards:** "any page", not only the one you thought of. Name the deliberate exceptions (`/login`, `/api/*`, static files) and say why.
+- **Session states:** no session, expired or invalid token, valid session visiting auth pages.
+- **Sibling flows:** a rule added to one form applies to its sibling too (register ↔ login: the same character filter, max lengths and casing).
+- **Prevent over reject:** the input keeps invalid characters and over-max lengths from being typed or pasted, instead of showing an error afterwards.
+- **Server-side too:** every client-side rule is also validated by the API (send `confirmPassword` to the backend).
+- **Normalization:** casing and trimming, applied the same way wherever data comes in (register, login, seed).
+- **Tooling follows business rules:** seed and reset scripts fail loudly on data the app would reject, and refuse to run in production.
+- **Environments:** dev and test setups with and without data, and how each test starts from a known state.
+- **Data edges:** empty state with its exact texts, singular vs. plural, missing values (counts as 0?), going over a goal, day boundaries in the user's time zone, other users' data stays hidden.
+- **Failure and timing:** API down or 5xx (shared generic error message), double submit, concurrent requests, a reload that fails keeps what was already on screen.
+- **Device:** mobile-only gestures (pull to refresh: threshold, what moves, desktop excluded) and touch vs. mouse.
+
+## Bug found by hand
+
+When the user reports a bug from manual testing, run the same steps in short form. Confirm the bug in the code and name the file. Skip the user story: the bug breaks a story that already exists. Propose criteria for the fix, plus the neighbouring cases that already pass, so the fix keeps them passing. Recommend the simplest behaviour: always redirect to `/` rather than "the previous page", since the `Referer` is unreliable. Then wait for the go.

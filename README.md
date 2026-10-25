@@ -20,6 +20,7 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 | --- | --- |
 | [To design](skills/to-design/SKILL.md) | Write a short design discussion showing the shape of the code for review before implementation, and iterate on it through inline `FB:` comments. |
 | [To design v2](skills/to-design-v2/SKILL.md) | Build the same design discussion part by part in a local review page, where three subagents propose approaches stacked full-width and you pick one or comment in threads. |
+| [To story](skills/to-story/SKILL.md) | Turn a feature or a bug found by hand into a user story with Given/When/Then acceptance criteria, agreed before any test or code is written. |
 
 ## License
 
