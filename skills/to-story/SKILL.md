@@ -41,11 +41,21 @@ Write the user story and the Given/When/Then criteria from the first draft. Shap
   *As a* names the person in their role (not "the user" or "the system"). *I want* names the capability in the person's words, with no UI or technical detail. *So that* names the real benefit, not a restatement of the want. One story per feature. When the want needs two "and"s, it is probably two stories: ask which one to do first.
 - **Acceptance criteria**: everything below the story makes it checkable. Every scenario serves the story, and the story's want is covered by at least one scenario.
 - **Out of scope**: what is explicitly not built now (buttons that stay disabled, navigation that is only decoration).
-- **Background** with the shared Givens: who is logged in, time zone, today's date, default data.
+- **Background** with the shared Givens, as a Gherkin `Background:` block: who is logged in, time zone, today's date, default data.
 - Scenarios grouped by area (redirects, form, API, after submit, seed, environments…), each with an **ID** (`A1`, `B4`, `C6`) so the user can answer by ID. Sub-IDs (`B4a`, `B4b`) split one rule into typing vs. pasting and similar.
+- **Gherkin, always**: every scenario goes in a ` ```gherkin ` block, one block per area, from the first draft on. `Scenario: <ID> — <title>`, then `Given` for the state, `When` for the one action, `Then` for the result, and `And` for each extra step of the same kind. Variants of one rule are a `Scenario Outline:` with an `Examples:` table. A criterion written as a sentence or a bullet is not a scenario yet:
+
+  ```gherkin
+  Scenario: B1 — Logging out deletes the session and shows the login
+    Given "ana" is logged in
+    And she is on "/"
+    When she clicks "Log out"
+    Then the browser no longer has the "access_token" cookie
+    And the URL is "/login"
+    And the "Log in" form is visible
+  ```
 - **Concrete values**: exact UI texts, status codes, limits, sample inputs and their results (`Ana_1 é-ñ!2` → `Ana12`), exact timestamps for day boundaries.
-- Gherkin code blocks or bold bullets both work; stay with one style per feature.
-- Mark what the user has not decided yet: *(assumed)* for a recommendation you applied, **(proposed)** for a scenario the user did not ask for.
+- Mark what the user has not decided yet: *(assumed)* for a recommendation you applied, **(proposed)** for a scenario the user did not ask for. Markers go in the scenario title (`Scenario: B5 — A double click sends a single request (proposed)`).
 - End with the open decisions: numbered, each with your recommendation and what changes if the user picks otherwise.
 
 Before sending, run the sweep below over the whole draft.
@@ -57,7 +67,7 @@ Apply each round of answers, then send:
 1. What changed, with the markers *(changed)*, *(new)* and *(extended)*.
 2. **How I read your answers**: every terse or ambiguous answer turned into a precise rule ("letters and numbers" → ASCII `a-z A-Z 0-9`, no accents). When an answer could mean two things, ask again and give your recommendation and the reason ("should the seed accept `ana_1`? I recommend no: that user could never type their name into the login").
 3. **Unchanged**: existing behaviour the new rules deliberately leave alone.
-4. The **full consolidated story**: the user story and every scenario, so the user can approve it in one read. When an answer changes who the feature is for or why, rewrite the user story too.
+4. The **full consolidated story**: the user story and every scenario in Gherkin, so the user can approve it in one read. When an answer changes who the feature is for or why, rewrite the user story too.
 5. The remaining questions, or a plain ask for approval when none are left.
 
 A general "looks good" approves the scenarios as written. Say that you read it that way, and drop the **(proposed)** marks.
@@ -73,6 +83,8 @@ Once the user gives the go, the next phase is failing tests only: run them, show
 ## The sweep
 
 These are cases the user has added after reading drafts. Check every one against the draft. Each one either becomes a scenario or goes to **Out of scope** or **Unchanged** on purpose.
+
+- **Format:** every criterion is a Gherkin scenario with at least one `When` and one `Then`. Nothing that checks behaviour sits outside a ` ```gherkin ` block; the user once had to ask for Given/When/Then/And after a draft came in bullets.
 
 - **Scope of guards:** "any page", not only the one you thought of. Name the deliberate exceptions (`/login`, `/api/*`, static files) and say why.
 - **Session states:** no session, expired or invalid token, valid session visiting auth pages.
