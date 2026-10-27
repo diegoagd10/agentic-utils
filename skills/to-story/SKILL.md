@@ -24,7 +24,7 @@ Done when you can say in one line what exists today (e.g. "the home page renders
 
 Ask what you cannot decide from the code: who it is for and why, what the thing *is*, what is shown, which rules apply, time zone and ordering, what happens when it fails or is empty, which test levels. Number every question and attach your recommendation, so the user can answer tersely by number ("1. yes 2. browser 3. yes"). Ask for a mockup or screenshot when the feature has UI; an image the user sends settles most questions, so re-read it before asking more.
 
-If the user's first message already settles enough, you can skip straight to the draft. In that case put the questions at the end of the draft.
+Ask before you draft. While a question is open, send no user story and no scenarios: the user once had to read a full draft whose questions sat at the end, and then reread it after answering them. Only when the code, the mockup and the user's message leave nothing open do you go straight to the draft.
 
 ### 3. Draft the story
 
@@ -56,19 +56,18 @@ Write the user story and the Given/When/Then criteria from the first draft. Shap
   ```
 - **Concrete values**: exact UI texts, status codes, limits, sample inputs and their results (`Ana_1 é-ñ!2` → `Ana12`), exact timestamps for day boundaries.
 - Mark what the user has not decided yet: *(assumed)* for a recommendation you applied, **(proposed)** for a scenario the user did not ask for. Markers go in the scenario title (`Scenario: B5 — A double click sends a single request (proposed)`).
-- End with the open decisions: numbered, each with your recommendation and what changes if the user picks otherwise.
-
-Before sending, run the sweep below over the whole draft.
+- Run the sweep below over the whole draft before sending. A case the sweep turns up that only the user can decide is a question. Keep these few, number them, and put them at the end with your recommendation. Everything else ends with a plain ask for approval.
 
 ### 4. Iterate
 
-Apply each round of answers, then send:
+The user has already read the draft, so reply only about what their feedback touched. Do not send the full story again. For each round, send:
 
-1. What changed, with the markers *(changed)*, *(new)* and *(extended)*.
+1. **What changed**: only the scenarios the feedback touched, written in full Gherkin and marked *(changed)*, *(new)* or *(extended)*. Removed or approved scenarios are listed by ID only ("B9 removed", "A6, A8 approved"). Repeat the user story or the Background only when you changed them.
 2. **How I read your answers**: every terse or ambiguous answer turned into a precise rule ("letters and numbers" → ASCII `a-z A-Z 0-9`, no accents). When an answer could mean two things, ask again and give your recommendation and the reason ("should the seed accept `ana_1`? I recommend no: that user could never type their name into the login").
-3. **Unchanged**: existing behaviour the new rules deliberately leave alone.
-4. The **full consolidated story**: the user story and every scenario in Gherkin, so the user can approve it in one read. When an answer changes who the feature is for or why, rewrite the user story too.
-5. The remaining questions, or a plain ask for approval when none are left.
+3. **Unchanged**, only when an answer could be read as touching it: existing behaviour the new rules deliberately leave alone.
+4. The remaining questions, or a plain ask for approval when none are left.
+
+Keep the consolidated story up to date yourself: it is what the tests are written from. Send it in full only when the user asks for it.
 
 A general "looks good" approves the scenarios as written. Say that you read it that way, and drop the **(proposed)** marks.
 
@@ -76,7 +75,7 @@ A general "looks good" approves the scenarios as written. Say that you read it t
 
 The phase ends when the user explicitly tells you to write the tests. Until then, read files and talk. Write nothing to the repo.
 
-An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Twice the user had to stop work on tests that started right after such an answer. After the last answer, send the full story again and ask for approval.
+An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Twice the user had to stop work on tests that started right after such an answer. After the last answer, send the changes as in step 4 and ask for approval in its own line.
 
 Once the user gives the go, the next phase is failing tests only: run them, show they fail for the expected reason, and write no production code.
 
