@@ -21,6 +21,14 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 | [To story](skills/to-story/SKILL.md) | Turn a feature or a bug found by hand into a user story with Given/When/Then acceptance criteria, agreed before any test or code is written. |
 | [To tests](skills/to-tests/SKILL.md) | Turn the approved story's scenarios into failing tests that fail for the expected reason, then stop for review before any production code. |
 | [To code](skills/to-code/SKILL.md) | Make the committed tests pass without changing them, run the project's quality gate, and run and ship the app on request. |
+| [To build](skills/to-build/SKILL.md) | Run tests, an independent test check (Sonnet), code, a code review (Fable) and a refactor on its own after the story is approved, using subagents, with saved evidence for every step, and hand back a flow diagram to review. |
+
+### Two flows
+
+Both flows start from a story approved with `/to-story`. They share no files, so you can compare them.
+
+- **Step by step:** `/to-tests` → `/to-code`, stopping for your review after each phase.
+- **On its own:** `/to-build`. It runs tests, a test check, code, a code review and a refactor with subagents and saves the evidence of every check. You review the result with a flow diagram. Its phase rules live in `skills/to-build/`. Each project can add a `docs/agents/coding-standards.md` with its architecture and the commands for its definition of done.
 
 ## License
 
