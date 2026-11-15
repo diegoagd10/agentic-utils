@@ -25,20 +25,13 @@ Done when you can name the tests commit and how many tests are red.
 
 Work from the innermost layer outward: shared or domain code first, then the backend, then the UI. Run that layer's tests before you move on.
 
-Place the code by the rules in `architecture.md`, one level up from this file (next to the `phases/` folder). Read that file before writing code.
+Place the code by the **Where code goes** rules: first the project's `docs/agents/coding-standards.md`, then the defaults in `coding-standards.md`, one level up from this file (next to the `phases/` folder). Read that file before writing code.
 
 Done when every test in the contract passes and none of them changed.
 
-## 3. Run the quality gate
+## 3. Run the definition of done checks
 
-Find the project's commands for formatting, linting, type checking, the full test suite and coverage, and the coverage threshold. Look in:
-
-- its agent instruction files;
-- its manifest scripts;
-- its `Makefile` or `justfile`;
-- its CI config.
-
-Run all of them, and run the whole suite, not only the new tests. If the coverage command skips a package, run that package's suite separately. In a monorepo, a stale build of a local package can cause false errors, so rebuild it before you trust them.
+The lead gives you the project's **Definition of done** commands for categories 1 to 6: tests, coverage, formatting, lint, types and dependencies. Run all of them, and run the whole suite, not only the new tests. If the coverage command skips a package, run that package's suite separately. In a monorepo, a stale build of a local package can cause false errors, so rebuild it before you trust them.
 
 Done when every command passes and coverage meets the threshold, if the project has one.
 

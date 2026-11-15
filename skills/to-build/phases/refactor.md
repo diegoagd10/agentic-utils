@@ -13,7 +13,7 @@ Code and comments follow the project's language.
 ## What to change
 
 1. Apply each structure finding from the review.
-2. Then check the diff against the rules in `architecture.md`, one level up from this file (next to the `phases/` folder), and apply what the review missed. For example:
+2. Then check the diff against the **Where code goes** rules: first the project's `docs/agents/coding-standards.md`, then the defaults in `coding-standards.md`, one level up from this file (next to the `phases/` folder), and apply what the review missed. For example:
    - logic moves to the module that owns the data;
    - a file used in one place is inlined;
    - existing shared helpers and schemas are reused;
@@ -27,7 +27,7 @@ Keep each change small, and run the affected tests after each one.
 - Add no behaviour, and fix no bug the tests do not cover. Report it instead: it is the user's decision.
 - When applying a finding would make the code worse, skip it and say why.
 
-Done when the full suite and the quality gate pass with no test changed.
+Done when the **Definition of done** commands for categories 1 to 6, which the lead gives you, pass with no test changed.
 
 ## Report to the lead
 

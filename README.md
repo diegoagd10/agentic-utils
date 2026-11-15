@@ -28,7 +28,7 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 Both flows start from a story approved with `/to-story`. They share no files, so you can compare them.
 
 - **Step by step:** `/to-tests` → `/to-code`, stopping for your review after each phase.
-- **On its own:** `/to-build`. It runs tests, a test check, code, a code review and a refactor with subagents and saves the evidence of every check. You review the result with a flow diagram. Its phase rules live in `skills/to-build/`.
+- **On its own:** `/to-build`. It runs tests, a test check, code, a code review and a refactor with subagents and saves the evidence of every check. You review the result with a flow diagram. Its phase rules live in `skills/to-build/`. Each project can add a `docs/agents/coding-standards.md` with its architecture and the commands for its definition of done.
 
 ## License
 

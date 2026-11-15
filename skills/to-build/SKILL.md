@@ -43,7 +43,7 @@ Every brief to a subagent contains:
 
 - the approved story in full;
 - the phase goal and its done check;
-- the phase file for its role and, for the implementer, reviewer and refactorer, `architecture.md`, as **absolute paths** inside this skill's directory. The files are listed below;
+- the phase file for its role and, for the implementer, reviewer and refactorer, `coding-standards.md`, as **absolute paths** inside this skill's directory (the files are listed below), plus the path of the project's own `docs/agents/coding-standards.md`;
 - what it must not do;
 - the report you expect back.
 
@@ -58,7 +58,7 @@ This skill's directory holds:
 | `phases/implement.md` | Implementer |
 | `phases/review.md` | Code reviewer |
 | `phases/refactor.md` | Refactorer |
-| `architecture.md` | Implementer, code reviewer, refactorer |
+| `coding-standards.md` | Default **Where code goes** and **Definition of done**: you, implementer, code reviewer, refactorer |
 | `run-and-ship.md` | You, for screenshots, trying the app and shipping |
 
 ## Keep going
@@ -89,18 +89,19 @@ Phases 3, 5 and 6 all run this check against `<contract-sha>`. That is the tests
 1. `git diff --name-only <contract-sha>` plus untracked files (`git status --porcelain`) lists no test file, fixture, test helper, snapshot, test config or coverage config.
 2. No `.skip`, `.only`, `xfail` or similar marker was added anywhere.
 3. The full suite passes, except the baseline failures from phase 0, which must match the saved list exactly.
-4. Every quality gate command passes. Coverage meets the project's threshold when it has one; otherwise record it.
+4. The **Definition of done** commands for categories 2 to 6 pass: coverage, formatting, lint, types and dependencies.
 
 ## Phases
 
 ### 0. Set up
 
-1. Read the story, the project's agent instruction files, `ARCHITECTURE.md` or similar architecture notes if they exist, and the project's commands for tests, formatting, linting, type checking and coverage (manifest scripts, `Makefile` or `justfile`, CI config).
+1. Read the story, the project's agent instruction files, `coding-standards.md` in this skill's directory, and the project's `docs/agents/coding-standards.md`.
 2. If the working tree has uncommitted changes, stop: they belong to the user.
 3. The base branch is the default branch from `origin/HEAD`; with no remote, it is the branch checked out now. Fetch when there is a remote. Record the base, then create `feat/<feature-slug>` from it.
-4. Run the full suite once as the baseline.
+4. If the project has no coding standards file, or its **Definition of done** lacks a command for a category, draft the missing parts. Read them from the project itself: its manifest scripts, `Makefile` or `justfile`, CI config, and how existing features are built. Mark a category with no tool as `none`, and write no rule the code does not show. Show the draft to the user and stop: approving it is their decision. This happens once per project. After approval, commit the file on its own as the first commit of the feature branch (`docs: add coding standards`). It reaches the base branch with the feature, and every later run finds it.
+5. Run the **Definition of done** commands for categories 1 to 6 once, as the baseline.
 
-Done when you can name the branch, the base commit and the commands, and the baseline is saved: green, or with the exact list of tests that already fail on the base, which are not this run's to fix.
+Done when you can name the branch, the base commit and the command for each category, and the baseline is saved. The baseline is green, or it lists exactly what already fails on the base (tests, vulnerabilities): those are not this run's to fix.
 
 ### 1. Failing tests: tests writer
 
@@ -167,6 +168,8 @@ Done when the refactor is committed, or reported as not needed, and its contract
 
 ### 6. Report and review
 
+First collect the demo evidence for **Definition of done** categories 7 and 8, following `run-and-ship.md`. Look at every screenshot yourself against the story's texts and the mockup. Any mismatch is a behaviour finding for the user.
+
 Write the report as one self-contained HTML page in the evidence folder and show it to the user (render or open it). In the chat, give three to five lines and the path. Write it for someone who did not watch the run: the most important thing first, in plain words, with no jargon the story did not use.
 
 In this order:
@@ -177,7 +180,7 @@ In this order:
 4. **Decisions the tests did not dictate**, each with the alternative that was rejected.
 5. **Code review**: the reviewer's structure findings and what the refactor did with each, then its behaviour findings for the user to decide on (amend the story or drop).
 6. **Scenario → test** table from phase 2, plus any tests the writer proposed without a scenario, for the user to accept or drop.
-7. **Evidence**: each check with its command, result and the relevant lines, linking to its file. For a UI change, add screenshots of the app running (see `run-and-ship.md`).
+7. **Definition of done**: one row per category with its command, result and the relevant lines, linking to its evidence file. Categories marked `none` are named here. Then the screenshots and the `curl` requests and responses, each under its scenario ID.
 8. **Commits**: tests, feat and refactor with their SHAs, so the user can review each diff on its own.
 9. **Left behind**: local config or databases created, servers stopped.
 
