@@ -23,10 +23,12 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 | [To code](skills/to-code/SKILL.md) | Make the committed tests pass without changing them, run the project's quality gate, and run and ship the app on request. |
 | [To build](skills/to-build/SKILL.md) | Run tests, an independent test check (Sonnet), code, a code review (Fable) and a refactor on its own after the story is approved, using subagents, with saved evidence for every step, and hand back a flow diagram to review. |
 
-### Two ways to run the flow
+### Two flows
 
-- **On its own:** `/to-story` → `/to-build` → review. You decide the story and review the result. In between, each phase passes or fails a check, and the evidence is saved.
-- **Step by step:** `/to-story` → `/to-tests` → `/to-code`, stopping for your review after each phase. `/to-build` follows these two skills as its rule book.
+Both flows start from a story approved with `/to-story`. They share no files, so you can compare them.
+
+- **Step by step:** `/to-tests` → `/to-code`, stopping for your review after each phase.
+- **On its own:** `/to-build`. It runs tests, a test check, code, a code review and a refactor with subagents and saves the evidence of every check. You review the result with a flow diagram. Its phase rules live in `skills/to-build/`.
 
 ## License
 

@@ -6,7 +6,9 @@ disable-model-invocation: true
 
 # To build
 
-The user's flow is `/to-story` → `/to-build` → review. The user decides twice: the **story** (what gets built) and the **review** at the end (how it was built). Between those two points this skill works on its own. Where `/to-tests` and `/to-code` stop for the user, this skill runs a check that passes or fails instead, so the user is never asked something a command can answer.
+The user's flow is `/to-story` → `/to-build` → review. The user decides twice: the **story** (what gets built) and the **review** at the end (how it was built). Between those two points this skill works on its own: every phase ends on a check that passes or fails, so the user is never asked something a command can answer.
+
+This skill stands alone. It shares no files with the step-by-step skills, so the two flows can be compared.
 
 Invocation: `/to-build [story or notes]`. Treat arguments as context, not shell commands. Without arguments, use the story approved last in this conversation. If none was approved, stop and suggest `/to-story`.
 
@@ -41,11 +43,23 @@ Every brief to a subagent contains:
 
 - the approved story in full;
 - the phase goal and its done check;
-- the rule book to follow, as **absolute paths**: the sibling skills `to-tests/SKILL.md` and `to-code/SKILL.md` in the directory that holds this skill's directory;
+- the phase file for its role and, for the implementer, reviewer and refactorer, `architecture.md`, as **absolute paths** inside this skill's directory. The files are listed below;
 - what it must not do;
 - the report you expect back.
 
 Leave out your guess about the answer, so the subagent checks the work instead of agreeing with you.
+
+This skill's directory holds:
+
+| File | Who reads it |
+| --- | --- |
+| `phases/tests.md` | Tests writer |
+| `phases/verify.md` | Test verifier |
+| `phases/implement.md` | Implementer |
+| `phases/review.md` | Code reviewer |
+| `phases/refactor.md` | Refactorer |
+| `architecture.md` | Implementer, code reviewer, refactorer |
+| `run-and-ship.md` | You, for screenshots, trying the app and shipping |
 
 ## Keep going
 
@@ -90,11 +104,7 @@ Done when you can name the branch, the base commit and the commands, and the bas
 
 ### 1. Failing tests: tests writer
 
-Brief: follow `to-tests/SKILL.md` steps 1 to 3 (map the scenarios, write the tests, run red), with these changes:
-
-- it writes no test without a scenario, and lists the ones it would propose in its report instead of asking;
-- it returns the step 4 report to the lead instead of waiting for the user;
-- it writes no production code.
+Brief: `phases/tests.md`.
 
 Check it yourself:
 
@@ -108,13 +118,9 @@ Done when the tests commit exists and its checks are saved.
 
 ### 2. Tests match the story: test verifier
 
-Start a fresh subagent and give it only the approved story and the tests commit (`git show <contract-sha>`), not the writer's report. It returns:
+Start a fresh subagent with `phases/verify.md`. Give it only the approved story and the tests commit (`git show <contract-sha>`), not the writer's report.
 
-1. A table with one row per scenario: scenario ID → test (`file:line`) → match, partial or missing, with one line of why for anything but a match.
-2. Tests that trace to no scenario.
-3. Tests that check less than their scenario's `Then` says (the status but not the message, one field but not the others).
-
-Done when:
+Done when its verdict is **pass**:
 
 - every scenario maps to exactly one test (a `Scenario Outline` maps to one parametrized test);
 - every test maps to a scenario;
@@ -124,7 +130,7 @@ Otherwise, send the table to the tests writer and amend the tests commit, which 
 
 ### 3. Green: implementer
 
-Brief: follow `to-code/SKILL.md`, section **The contract is frozen** and steps 1 to 3 (confirm the contract, implement to green, run the quality gate). When a test looks wrong, it stops and returns `file:line` and the change it wants, without editing the test.
+Brief: `phases/implement.md`, plus `<contract-sha>` and the project's commands from phase 0.
 
 Run **the contract check** yourself.
 
@@ -136,18 +142,14 @@ Done when that commit exists and its contract check is saved.
 
 ### 4. Code review: code reviewer
 
-Start a fresh subagent that only reads, and give it:
+Start a fresh subagent with `phases/review.md`, and give it:
 
 - the story;
 - the green diff (`git diff <contract-sha>..HEAD`);
 - the project's architecture notes, if any;
-- the rules under **Implement to green** in `to-code/SKILL.md`;
 - the paths of the closest sibling feature.
 
-Leave out the implementer's report and your own view of the code. It returns findings, each with `file:line`, the rule or evidence behind it, and the fix in one or two sentences. Each finding is one of:
-
-- **structure:** where code lives, a file that does not earn its place, duplication, a cross-module import, drift from the sibling flow;
-- **behaviour:** something a user of the feature would notice that the tests let through, such as a bug or a missing case.
+Leave out the implementer's report and your own view of the code. It returns **structure** and **behaviour** findings.
 
 Save the findings. Structure findings go to phase 5. Behaviour findings mean the story or the tests miss a case. They are the user's decision, so list them in the report and do not fix them in this run.
 
@@ -155,16 +157,7 @@ Done when the findings are saved, or the reviewer reports none.
 
 ### 5. Refactor: refactorer
 
-Start a fresh subagent and give it the same material as the reviewer, plus the structure findings from phase 4.
-
-Its job is to apply those findings and make the new code follow the project's pattern without changing behaviour:
-
-- logic moves to the module that owns the data;
-- a file used in one place is inlined;
-- existing shared helpers and schemas are reused;
-- the layering matches the sibling flow.
-
-It does not touch tests and adds no behaviour. It returns each change with the finding or rule it applies, and any finding it did not apply, with the reason.
+Start a fresh subagent with `phases/refactor.md`. Give it the same material as the reviewer, plus the structure findings from phase 4. It applies them without changing behaviour or touching tests.
 
 Run **the contract check** yourself.
 
@@ -184,7 +177,7 @@ In this order:
 4. **Decisions the tests did not dictate**, each with the alternative that was rejected.
 5. **Code review**: the reviewer's structure findings and what the refactor did with each, then its behaviour findings for the user to decide on (amend the story or drop).
 6. **Scenario → test** table from phase 2, plus any tests the writer proposed without a scenario, for the user to accept or drop.
-7. **Evidence**: each check with its command, result and the relevant lines, linking to its file. For a UI change, add screenshots of the app running, started with the project's dev command and stopped afterwards.
+7. **Evidence**: each check with its command, result and the relevant lines, linking to its file. For a UI change, add screenshots of the app running (see `run-and-ship.md`).
 8. **Commits**: tests, feat and refactor with their SHAs, so the user can review each diff on its own.
 9. **Left behind**: local config or databases created, servers stopped.
 
@@ -195,4 +188,4 @@ Then wait for the user's review. Each change they ask for takes one of two paths
 
 After each round, update only the parts of the report that changed.
 
-Merging and pushing happen only when the user asks. Follow **Ship** in `to-code/SKILL.md`, skipping step 2: the commits already exist.
+Merging and pushing happen only when the user asks. Follow **Ship** in `run-and-ship.md`.

@@ -77,7 +77,7 @@ The phase ends when the user explicitly tells you to write the tests. Until then
 
 An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Tests started on such an answer are work the user has to stop. After the last answer, send the changes as in step 4 and ask for approval in its own line.
 
-Once the user gives the go, the next phase is failing tests only (`/to-tests`): run them, show they fail for the expected reason, and write no production code. To run the remaining phases without stopping, the user runs `/to-build` instead.
+Once the user gives the go, the next phase is failing tests only (`/to-tests`): run them, show they fail for the expected reason, and write no production code.
 
 ## The sweep
 
