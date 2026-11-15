@@ -24,7 +24,7 @@ Done when you can say in one line what exists today (e.g. "the home page renders
 
 Ask what you cannot decide from the code: who it is for and why, what the thing *is*, what is shown, which rules apply, time zone and ordering, what happens when it fails or is empty, which test levels. Number every question and attach your recommendation, so the user can answer tersely by number ("1. yes 2. browser 3. yes"). Ask for a mockup or screenshot when the feature has UI; an image the user sends settles most questions, so re-read it before asking more.
 
-Ask before you draft. While a question is open, send no user story and no scenarios: the user once had to read a full draft whose questions sat at the end, and then reread it after answering them. Only when the code, the mockup and the user's message leave nothing open do you go straight to the draft.
+Ask before you draft. While a question is open, send no user story and no scenarios, because a draft written before the answers has to be read twice. Only when the code, the mockup and the user's message leave nothing open do you go straight to the draft.
 
 ### 3. Draft the story
 
@@ -75,7 +75,7 @@ A general "looks good" approves the scenarios as written. Say that you read it t
 
 The phase ends when the user explicitly tells you to write the tests. Until then, read files and talk. Write nothing to the repo.
 
-An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Twice the user had to stop work on tests that started right after such an answer. After the last answer, send the changes as in step 4 and ask for approval in its own line.
+An answer to your last question ("yes", "1 correct, 2 yes") closes that question, not the phase. Tests started on such an answer are work the user has to stop. After the last answer, send the changes as in step 4 and ask for approval in its own line.
 
 Once the user gives the go, the next phase is failing tests only (`/to-tests`): run them, show they fail for the expected reason, and write no production code.
 
@@ -83,7 +83,7 @@ Once the user gives the go, the next phase is failing tests only (`/to-tests`): 
 
 These are cases the user has added after reading drafts. Check every one against the draft. Each one either becomes a scenario or goes to **Out of scope** or **Unchanged** on purpose.
 
-- **Format:** every criterion is a Gherkin scenario with at least one `When` and one `Then`. Nothing that checks behaviour sits outside a ` ```gherkin ` block; the user once had to ask for Given/When/Then/And after a draft came in bullets.
+- **Format:** every criterion is a Gherkin scenario with at least one `When` and one `Then`. Nothing that checks behaviour sits outside a ` ```gherkin ` block.
 
 - **Scope of guards:** "any page", not only the one you thought of. Name the deliberate exceptions (`/login`, `/api/*`, static files) and say why.
 - **Session states:** no session, expired or invalid token, valid session visiting auth pages.

@@ -14,7 +14,7 @@ Invocation: `/to-code [notes]`. Treat arguments as context, not shell commands.
 
 ## The contract is frozen
 
-When a test looks wrong, or blocks a clean implementation, stop before you edit it. Show the test (`file:line`), say why it has to change and what the edit would be, and wait for the user's yes. Renamed labels, selectors, timeouts and "small" fixes all count. The user has asked for this in every implementation they have run.
+When a test looks wrong, or blocks a clean implementation, stop before you edit it. Show the test (`file:line`), say why it has to change and what the edit would be, and wait for the user's yes. Renamed labels, selectors, timeouts and "small" fixes all count.
 
 ## Steps
 
