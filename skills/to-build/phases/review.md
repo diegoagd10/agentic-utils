@@ -20,9 +20,10 @@ Give each finding:
 - the rule, sibling code or failure that backs it;
 - the fix, in one or two sentences.
 
-Put each finding in one of two groups:
+Put each finding in one of three groups:
 
 - **Structure:** something the user of the feature would not notice. For example: code in the wrong module, a file that does not earn its place, duplicated logic, a cross-module import, drift from the sibling flow, a confusing name.
-- **Behaviour:** something the user of the feature would notice that the tests let through. For example: a bug, a missing case, a security gap, a wrong message.
+- **Defect:** something the user of the feature would notice that the tests let through, where the right behaviour follows from the story's intent, the sibling feature or a project rule, so nobody needs to make a new decision. For example: an error message that stays after the problem is gone, an empty-state text that is false, input the API accepts but the sibling rejects, a crash on an error response, a race that shows the wrong data. Write the expected behaviour as a Given/When/Then with the concrete input and result.
+- **Product choice:** something the user of the feature would notice where the right behaviour is not clear from the story, the code or the rules. For example: new wording with no precedent, two reasonable rules the story leaves open, a change in scope, or a fix that would change what a story scenario expects.
 
-Order each group from most to least important.
+When you are unsure whether something is a defect or a product choice, call it a product choice. Order each group from most to least important.
