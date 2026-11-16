@@ -127,7 +127,7 @@ Done when its verdict is **pass**:
 - every test maps to a scenario;
 - no test checks less than its scenario.
 
-Otherwise, send the table to the tests writer and amend the tests commit, which no production code depends on yet. After each amend, rerun the phase 1 checks and start a new fresh verifier on the new `<contract-sha>`. Save the final table: it goes into the report.
+Otherwise, send the table to the tests writer and amend the tests commit, which no production code depends on yet. After each amend, rerun the phase 1 checks. Start a new fresh verifier on the new `<contract-sha>` when the amend touched a test that traces to a scenario; when it touched only other tests, save the diff that shows that instead. Save the final table: it goes into the report.
 
 ### 3. Green: implementer
 
@@ -150,11 +150,18 @@ Start a fresh subagent with `phases/review.md`, and give it:
 - the project's architecture notes, if any;
 - the paths of the closest sibling feature.
 
-Leave out the implementer's report and your own view of the code. It returns **structure** and **behaviour** findings.
+Leave out the implementer's report and your own view of the code. It returns **structure**, **defect** and **product choice** findings. Save them.
 
-Save the findings. Structure findings go to phase 5. Behaviour findings mean the story or the tests miss a case. They are the user's decision, so list them in the report and do not fix them in this run.
+- **Structure** findings go to phase 5.
+- **Product choices** go to the report for the user. Do not build them.
+- **Defects** are fixed now, test first, so the user does not get a list of obvious bugs to decide on:
+  1. Decide which of the tests writer's proposed tests (phase 1) to add. Add one when it covers a rule in the project's coding standards or a branch of the new code that no test reaches. Drop the rest, with one line on why.
+  2. The tests writer adds one test per defect, named `D<n> — <title>` from the reviewer's Given/When/Then, plus the proposed tests you kept. Check they fail for the expected reason (a kept test that already passes is fine as a guard), then commit `test: cover review findings`. `<contract-sha>` moves to that commit.
+  3. The implementer makes them pass. Run **the contract check**, then commit `fix: review findings`.
 
-Done when the findings are saved, or the reviewer reports none.
+  If a defect fix would change what a story scenario expects, it is a product choice after all: move it to the report. Fix defects in one round; anything left goes to the report.
+
+Done when the findings are saved, and the defect commits exist or there were no defects.
 
 ### 5. Refactor: refactorer
 
@@ -168,7 +175,7 @@ Done when the refactor is committed, or reported as not needed, and its contract
 
 ### 6. Report and review
 
-First collect the demo evidence for **Definition of done** categories 7 and 8, following `run-and-ship.md`. Look at every screenshot yourself against the story's texts and the mockup. Any mismatch is a behaviour finding for the user.
+First collect the demo evidence for **Definition of done** categories 7 and 8, following `run-and-ship.md`. Look at every screenshot yourself against the story's texts and the mockup. Treat a mismatch like a review finding: a defect goes through the phase 4 defect steps and is shot again, and a product choice goes to the report.
 
 Write the report as one self-contained HTML page in the evidence folder and show it to the user (render or open it). In the chat, give three to five lines and the path. Write it for someone who did not watch the run: the most important thing first, in plain words, with no jargon the story did not use.
 
@@ -178,11 +185,13 @@ In this order:
 2. **How a request flows**: one use of the feature traced end to end through the project's own layers (in a web app, for example: UI → browser request → route → client → controller → service → data). Draw it as a diagram (inline SVG or Mermaid), with `file` paths and the new pieces highlighted.
 3. **What depends on what**: the touched modules, entry points (controllers, commands, handlers) on the left and what they call on the right, new pieces highlighted. Each new file, module or service gets one line on why no existing one could hold it.
 4. **Decisions the tests did not dictate**, each with the alternative that was rejected.
-5. **Code review**: the reviewer's structure findings and what the refactor did with each, then its behaviour findings for the user to decide on (amend the story or drop).
-6. **Scenario → test** table from phase 2, plus any tests the writer proposed without a scenario, for the user to accept or drop.
-7. **Definition of done**: one row per category with its command, result and the relevant lines, linking to its evidence file. Categories marked `none` are named here. Then the screenshots and the `curl` requests and responses, each under its scenario ID.
-8. **Commits**: tests, feat and refactor with their SHAs, so the user can review each diff on its own.
-9. **Left behind**: local config or databases created, servers stopped.
+5. **Decided for you**: each defect fixed and each proposed test kept, with one line each and the commit that holds it (`test: cover review findings`, `fix: review findings`). Dropping those two commits undoes all of it. Then the proposed tests you dropped, with why. None of this needs an answer.
+6. **Your decisions**: only the product choices, each with the options and your recommendation. When there are none, say so.
+7. **Code review**: the reviewer's structure findings and what the refactor did with each.
+8. **Scenario → test** table from phase 2, plus the `D<n>` tests.
+9. **Definition of done**: one row per category with its command, result and the relevant lines, linking to its evidence file. Categories marked `none` are named here. Then the screenshots and the `curl` requests and responses, each under its scenario ID.
+10. **Commits**: tests, feat, review fixes and refactor with their SHAs, so the user can review each diff on its own.
+11. **Left behind**: local config or databases created, servers stopped.
 
 Then wait for the user's review. Each change they ask for takes one of two paths:
 
