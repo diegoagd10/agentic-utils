@@ -18,6 +18,7 @@ Add reusable skills under `skills/<skill-name>/SKILL.md`. See [skills/README.md]
 
 | Skill | Purpose |
 | --- | --- |
+| [Grill me](skills/grillme/SKILL.md) | Interview you with numbered question lists about a code change, project or skill until you agree, reading the code first when there is any, and close with a summary of what was agreed. |
 | [To story](skills/to-story/SKILL.md) | Turn a feature or a bug found by hand into a user story with Given/When/Then acceptance criteria, agreed before any test or code is written. |
 | [To tests](skills/to-tests/SKILL.md) | Turn the approved story's scenarios into failing tests that fail for the expected reason, then stop for review before any production code. |
 | [To code](skills/to-code/SKILL.md) | Make the committed tests pass without changing them, run the project's quality gate, and run and ship the app on request. |
