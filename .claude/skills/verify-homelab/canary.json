@@ -1,0 +1,16 @@
+{
+  "app": "whoami-canary",
+  "server": "svc-02",
+  "image": "traefik/whoami",
+  "tag_old": "v1.11.0",
+  "tag_new": "v1.12.0",
+  "container_port": 80,
+  "exposures": {
+    "tunnel": {"bind": "127.0.0.1", "port": 18080},
+    "lan": {"bind": "lan-ip", "port": 18081}
+  },
+  "traefik_server": "svc-01",
+  "lan_hostname": "whoami-canary.local.dagdappshub.com",
+  "tunnel_hostname": "whoami-canary.dagdappshub.com",
+  "regression_url": "https://jellyfin.local.dagdappshub.com/"
+}
