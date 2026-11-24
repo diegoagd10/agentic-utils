@@ -4,13 +4,28 @@ The stack already lives in `~/stacks/<app>/` on its server; placement, ports and
 as they are. Every update carries a **rollback point**: the exact image the app runs now, kept
 under a tag so one command restores it.
 
+## Stacks that deploy themselves
+
+`calorie` on svc-01 is **not** updated with the steps below. Merging to `main` in
+open-calorie-tracker deploys it once CI passes: the Deploy workflow runs `~/bin/calorie-deploy`,
+which backs up the database, checks health and rolls back.
+
+- Deploy or re-check by hand: run the Deploy workflow from `main` with `deploy` or `check`.
+- Stop automatic deploys: set the repo variable `DEPLOY_ON_MERGE` to `false`.
+- Never rsync source into `~/stacks/calorie` or run `docker compose up --build` there: it replaces
+  the deployed images. Plain `docker compose up -d` is safe.
+- State, logs and backups: `~/calorie/deploy/`. If `in-progress` exists there, a deploy was
+  interrupted; the next deploy recovers it. Do not delete it.
+- Copied by hand when they change in the repo: `deploy/calorie-deploy` to `~/bin/`, and
+  `docker-compose.yml` to `~/stacks/calorie/`. Ask the user first, and keep a `.bak-<date>`.
+
 ## 1. Identify the update source
 
 Find which kind of stack it is from its compose file:
 
 - **Registry image** (`image:` only): the new version comes from `docker compose pull`, or from
   editing a pinned tag to the target version.
-- **Built from source** (`build:`, e.g. the `calorie` stack on svc-01, built from the open-calorie-tracker repo): the new version is a **commit**
+- **Built from source** (`build:`): the new version is a **commit**
   of the app's repo (usually under `~/.t3/projects/` on the laptop). Ask the user which ref to
   deploy (default: the remote's default branch). The current version is the commit recorded in
   the last `~/stacks` git message for the app.

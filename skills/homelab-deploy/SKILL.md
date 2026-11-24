@@ -20,7 +20,7 @@ Reach both from the laptop by SSH alias (`ssh svc-01`, `ssh svc-02`); aliases ca
 | LAN IP / Tailscale | 192.168.4.21 / 100.95.12.55 | 192.168.4.20 / 100.97.119.96 |
 | Hardware | i5, 4 cores, 7.7 GB RAM, 113 GB **SSD** | i3, 4 cores, 3.7 GB RAM, 931 GB **HDD** |
 | Role | **performance**: CPU/RAM-heavy, databases, latency-sensitive, APIs | **storage**: streaming, media, large files, backups |
-| Stacks in `~/stacks` | `traefik` (LAN reverse proxy), `calorie` (open-calorie-tracker, built from source, tunnel-only) | `jellyfin`, `navidrome` (tunnel-only); media in ~/media |
+| Stacks in `~/stacks` | `traefik` (LAN reverse proxy), `calorie` (open-calorie-tracker, tunnel-only, deployed by GitHub Actions; see [UPDATE.md](UPDATE.md) before touching it) | `jellyfin`, `navidrome` (tunnel-only); media in ~/media |
 | Host services | Tailscale subnet router `192.168.4.0/22`, cloudflared | cloudflared |
 | Listens beyond localhost | `22` SSH, `80` and `443` Traefik | `22` SSH, `8096` Jellyfin (host network) |
 
