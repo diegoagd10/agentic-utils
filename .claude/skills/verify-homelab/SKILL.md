@@ -11,7 +11,7 @@ The thing under test is not an app in this repo. It is the deploy flow written i
 a working, narrowly exposed, updatable, roll-backable app on the homelab.
 
 The repo copy is the source. `~/.agents/skills/homelab-deploy` is a symlink to the main checkout
-`/home/dagd/Projects/agentic-utils/skills/homelab-deploy`, and `~/.claude/skills/homelab-deploy`
+`/home/dagd/.t3/projects/agentic-utils/skills/homelab-deploy`, and `~/.claude/skills/homelab-deploy`
 points at `~/.agents/skills/homelab-deploy`, so every agent on the laptop uses whatever the main
 checkout has. Verify an edit from its worktree before it reaches main: the scripts below always
 read the `homelab-deploy` beside them, not the global one.
